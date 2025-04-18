@@ -18,19 +18,43 @@ const AdminLayout = ({ children }) => {
   };
 
   if (!currentUser) {
-    return <div className="loading">Please log in to access the admin portal...</div>;
+    return (
+      <div className="loading">
+        <div className="loading-spinner"></div>
+        <p>Please log in to access the admin portal...</p>
+      </div>
+    );
   }
+
+  // Map of navigation items with their icons
+  const navItems = [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/admin/items', label: 'Inventory', icon: '📦' },
+    { path: '/admin/carts', label: 'Carts', icon: '🛒' },
+    { path: '/admin/analytics', label: 'Analytics', icon: '📈' },
+  ];
 
   return (
     <div className="admin-layout">
       {/* Header */}
       <header className="admin-header">
-        <div className="admin-header-logo">
-          <h1>Smart Cart Admin</h1>
+        <div className="admin-header-left">
+          <div className="admin-header-logo">
+            <h1>
+              <span className="logo-icon">🛒</span>
+              <span className="logo-text">Smart-Cart Admin Portal</span>
+            </h1>
+          </div>
         </div>
         <div className="admin-header-user">
-          <span>{currentUser.email}</span>
-          <button className="btn-logout" onClick={handleLogout}>Logout</button>
+          <div className="user-info">
+            <span className="user-email">{currentUser.email}</span>
+            <span className="user-role">Administrator</span>
+          </div>
+          <button className="btn-logout" onClick={handleLogout}>
+            <span className="logout-icon">🚪</span>
+            <span className="logout-text">Logout</span>
+          </button>
         </div>
       </header>
 
@@ -39,45 +63,36 @@ const AdminLayout = ({ children }) => {
         <aside className="admin-sidebar">
           <nav className="admin-nav">
             <ul>
-              <li>
-                <Link 
-                  to="/admin/dashboard" 
-                  className={location.pathname === '/admin/dashboard' || location.pathname === '/admin' ? 'active' : ''}
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/admin/items" 
-                  className={location.pathname.startsWith('/admin/items') ? 'active' : ''}
-                >
-                  Inventory
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/admin/carts" 
-                  className={location.pathname.startsWith('/admin/carts') ? 'active' : ''}
-                >
-                  Carts
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/admin/analytics" 
-                  className={location.pathname.startsWith('/admin/analytics') ? 'active' : ''}
-                >
-                  Analytics
-                </Link>
-              </li>
+              {navItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={
+                      (item.path === '/admin/dashboard' && 
+                       (location.pathname === '/admin/dashboard' || location.pathname === '/admin')) ||
+                      (item.path !== '/admin/dashboard' && location.pathname.startsWith(item.path))
+                        ? 'active'
+                        : ''
+                    }
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-text">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
+          
+          <div className="sidebar-footer">
+            <div className="app-version">v1.2.0</div>
+          </div>
         </aside>
 
         {/* Main Content */}
         <main className="admin-main">
-          {children}
+          <div className="content-wrapper">
+            {children}
+          </div>
         </main>
       </div>
     </div>
