@@ -1,25 +1,69 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 
 const CartPage = () => {
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // This would come from your API in a real application
+  const mockCarts = [
+    {
+      cartId: 'CART-001',
+      status: 'online',
+      createdAt: '2025-01-15 09:30',
+      updatedAt: '2025-04-19 08:45'
+    },
+    {
+      cartId: 'CART-002',
+      status: 'offline',
+      createdAt: '2025-01-15 09:30',
+      updatedAt: '2025-04-18 16:22'
+    },
+    {
+      cartId: 'CART-003',
+      status: 'maintenance',
+      createdAt: '2025-02-20 14:15',
+      updatedAt: '2025-04-17 11:30'
+    },
+    {
+      cartId: 'CART-004',
+      status: 'online',
+      createdAt: '2025-03-05 10:00',
+      updatedAt: '2025-04-19 09:12'
+    }
+  ];
+
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+  };
+
+  const filteredCarts = statusFilter === 'all' 
+    ? mockCarts 
+    : mockCarts.filter(cart => cart.status === statusFilter);
+
+  const getStatusClass = (status) => {
+    switch(status) {
+      case 'online': return 'status-online';
+      case 'offline': return 'status-offline';
+      case 'maintenance': return 'status-maintenance';
+      default: return '';
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="carts-page">
         <div className="carts-header">
-          <h2>Shopping Carts Management</h2>
+          <h2>Smart Cart Devices</h2>
+          <button className="btn btn-primary">Register New Cart</button>
         </div>
         
         <div className="carts-filters">
-          <select className="status-filter">
+          <select className="status-filter" value={statusFilter} onChange={handleStatusFilterChange}>
             <option value="all">All Carts</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="abandoned">Abandoned</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+            <option value="maintenance">Maintenance</option>
           </select>
-          <div className="date-filters">
-            <input type="date" className="date-filter" placeholder="From" />
-            <input type="date" className="date-filter" placeholder="To" />
-          </div>
         </div>
         
         <div className="carts-table-container">
@@ -28,51 +72,34 @@ const CartPage = () => {
               <tr>
                 <th>Cart ID</th>
                 <th>Status</th>
-                <th>Items</th>
-                <th>Total Cost</th>
-                <th>Started At</th>
+                <th>Created At</th>
+                <th>Last Updated</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>CART-001</td>
-                <td><span className="status-active">Active</span></td>
-                <td>3</td>
-                <td>$12.97</td>
-                <td>2025-04-18 09:30</td>
-                <td>
-                  <button className="btn-view">View</button>
-                </td>
-              </tr>
-              <tr>
-                <td>CART-002</td>
-                <td><span className="status-completed">Completed</span></td>
-                <td>7</td>
-                <td>$35.45</td>
-                <td>2025-04-18 10:15</td>
-                <td>
-                  <button className="btn-view">View</button>
-                </td>
-              </tr>
-              <tr>
-                <td>CART-003</td>
-                <td><span className="status-abandoned">Abandoned</span></td>
-                <td>2</td>
-                <td>$8.48</td>
-                <td>2025-04-18 11:20</td>
-                <td>
-                  <button className="btn-view">View</button>
-                  <button className="btn-delete">Delete</button>
-                </td>
-              </tr>
+              {filteredCarts.map(cart => (
+                <tr key={cart.cartId}>
+                  <td>{cart.cartId}</td>
+                  <td><span className={`status-badge ${getStatusClass(cart.status)}`}>{cart.status}</span></td>
+                  <td>{cart.createdAt}</td>
+                  <td>{cart.updatedAt}</td>
+                  <td>
+                    <button className="btn-view">View</button>
+                    <button className="btn-edit">Edit</button>
+                    {cart.status !== 'maintenance' && (
+                      <button className="btn-maintenance">Set to Maintenance</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         
         <div className="pagination">
           <button>&lt;</button>
-          <span>Page 1 of 3</span>
+          <span>Page 1 of 1</span>
           <button>&gt;</button>
         </div>
       </div>

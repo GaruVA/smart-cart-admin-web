@@ -31,6 +31,7 @@ const AdminLayout = ({ children }) => {
     { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/admin/items', label: 'Inventory', icon: '📦' },
     { path: '/admin/carts', label: 'Carts', icon: '🛒' },
+    { path: '/admin/sessions', label: 'Sessions', icon: '🔄' },
     { path: '/admin/analytics', label: 'Analytics', icon: '📈' },
   ];
 
