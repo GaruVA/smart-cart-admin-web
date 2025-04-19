@@ -10,9 +10,11 @@ import ItemsPage from './pages/ItemsPage';
 import CartPage from './pages/CartPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import NotFound from './pages/NotFound';
+import SessionsPage from './pages/SessionsPage';
 
 // Context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+
 
 // Firebase configuration
 const firebaseConfig = {
@@ -69,6 +71,12 @@ function App() {
             <Route path="/admin/carts" element={
               <ProtectedRoute>
                 <CartPage />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/admin/sessions" element={
+              <ProtectedRoute>
+                <SessionsPage />
               </ProtectedRoute>
             } />
             
