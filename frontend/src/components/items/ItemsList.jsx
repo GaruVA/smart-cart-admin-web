@@ -81,44 +81,33 @@ const ItemsList = ({ onViewDetail, onAddNew, onEditItem, onDeleteItem }) => {
   
   return (
     <div className="items-list">
-      <div className="items-header">
-        <h2>Items List</h2>
-        <button className="btn btn-primary" onClick={onAddNew}>Add New Item</button>
-      </div>
-      
       {/* Filter Section */}
-      <div className="items-filter">
-        <div className="filter-row">
-          <div className="search-field">
-            <input
-              type="text"
-              placeholder="Search by name, description or barcode..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="form-control"
-            />
-          </div>
-          
-          <div className="category-filter">
-            <select 
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="form-control"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-          
-          <button 
-            className="btn btn-outline-secondary"
-            onClick={clearFilters}
-          >
-            Clear Filters
-          </button>
-        </div>
+      <div className="items-filters">
+        <select 
+          className="status-filter" 
+          value={categoryFilter} 
+          onChange={(e) => setCategoryFilter(e.target.value)}
+        >
+          <option value="">All Categories</option>
+          {categories.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+        
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        
+        <button 
+          className="btn btn-outline-secondary"
+          onClick={clearFilters}
+        >
+          Clear Filters
+        </button>
       </div>
       
       {/* Items Table */}
@@ -152,7 +141,9 @@ const ItemsList = ({ onViewDetail, onAddNew, onEditItem, onDeleteItem }) => {
                   <td>{item.name}</td>
                   <td>{item.category}</td>
                   <td>${item.price.toFixed(2)}</td>
-                  <td>{item.stockQuantity}</td>
+                  <td className={item.stockQuantity < 10 ? 'low-stock' : ''}>
+                    {item.stockQuantity}
+                  </td>
                   <td className="action-buttons">
                     <button onClick={() => onViewDetail(item.id)} className="btn btn-sm btn-info">View</button>
                     <button onClick={() => onEditItem(item.id)} className="btn btn-sm btn-warning">Edit</button>

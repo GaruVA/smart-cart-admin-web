@@ -129,12 +129,15 @@ const ItemsPage = () => {
   
   return (
     <AdminLayout>
-    <div className="items-page">
-      <h1>Items Management</h1>
-      <div className="items-container">
+      <div className="items-page">
+        <div className="page-header">
+          <h1>Items Management</h1>
+          <button className="btn btn-primary" onClick={() => handleViewChange('add')}>
+            <i className="fas fa-plus"></i> Add New Item
+          </button>
+        </div>
         {renderView()}
       </div>
-    </div>
     </AdminLayout>
   );
 };
