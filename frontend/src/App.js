@@ -7,7 +7,7 @@ import { getAnalytics } from 'firebase/analytics';
 import Login from './pages/Login';
 import DashboardPage from './pages/DashboardPage';
 import ItemsPage from './pages/ItemsPage';
-import CartPage from './pages/CartPage';
+import CartPage from './pages/CartsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import NotFound from './pages/NotFound';
 import SessionsPage from './pages/SessionsPage';
