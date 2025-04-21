@@ -324,21 +324,21 @@ body {
   font-style: italic;
 }
 
-/* Items & Carts Tables */
-.items-page, .carts-page, .analytics-page {
+/* Items & Carts & Sessions Tables */
+.items-page, .carts-page, .sessions-page, .analytics-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.items-header, .carts-header, .analytics-header {
+.items-header, .carts-header, .sessions-header, .analytics-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.items-filters, .carts-filters, .analytics-filters {
+.items-filters, .carts-filters, .sessions-filters, .analytics-filters {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
@@ -364,14 +364,13 @@ body {
   min-width: 140px;
 }
 
-.items-table-container, .carts-table-container, .analytics-tables {
+.items-table-container, .carts-table-container, .sessions-table-container, .analytics-tables {
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
 }
 
-.items-table, .carts-table, .analytics-table {
+.items-table, .carts-table, .sessions-table, .analytics-table {
   width: 100%;
   border-collapse: collapse;
 }
