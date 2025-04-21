@@ -26,7 +26,7 @@ const DashboardPage = () => {
   return (
     <AdminLayout>
       <div className="analytics-page">
-        <h2>Dashboard</h2>
+      <div class="page-header"><h1>Dashboard</h1></div>
         <div className="analytics-kpi-container">
           {kpis.map((kpi, i) => (
             <div key={i} className="analytics-kpi">
