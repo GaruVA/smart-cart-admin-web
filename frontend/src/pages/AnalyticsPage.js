@@ -131,14 +131,52 @@ const AnalyticsPage = () => {
             ))}
           </div>
           <div className="analytics-charts">
-            <div className="chart-container">
-              <h3 style={{ marginBottom: 8 }}>{TABS.find(t => t.value === activeTab)?.label} Trend</h3>
-              <div className="chart-placeholder">[Chart for {activeTab} goes here]</div>
-            </div>
-            <div className="chart-container">
-              <h3 style={{ marginBottom: 8 }}>{TABS.find(t => t.value === activeTab)?.label} by Category</h3>
-              <div className="chart-placeholder">[Bar chart for {activeTab} by category goes here]</div>
-            </div>
+            {/* Sales Analytics: Sales Trend, Sales by Category */}
+            {activeTab === 'sales' && (
+              <>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Sales Trend (Last 7 Days)</h3>
+                  <div className="chart-placeholder">[Line chart: Daily sales for the past week]</div>
+                </div>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Sales by Category</h3>
+                  <div className="chart-placeholder">[Bar chart: Total sales by product category]</div>
+                </div>
+              </>
+            )}
+            {/* Inventory Analytics: Inventory Levels */}
+            {activeTab === 'inventory' && (
+              <div className="chart-container">
+                <h3 style={{ marginBottom: 8 }}>Inventory Levels by Category</h3>
+                <div className="chart-placeholder">[Bar chart: Current stock levels by category]</div>
+              </div>
+            )}
+            {/* Cart Analytics: Cart Status Distribution, Cart Usage */}
+            {activeTab === 'carts' && (
+              <>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Cart Status Distribution</h3>
+                  <div className="chart-placeholder">[Pie chart: Distribution of cart statuses]</div>
+                </div>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Cart Usage</h3>
+                  <div className="chart-placeholder">[Bar chart: Number of sessions per cart]</div>
+                </div>
+              </>
+            )}
+            {/* Session Analytics: Average Session Value, Hourly Session Activity */}
+            {activeTab === 'sessions' && (
+              <>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Average Session Value (Last 7 Days)</h3>
+                  <div className="chart-placeholder">[Line chart: Average session value per day]</div>
+                </div>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Hourly Session Activity</h3>
+                  <div className="chart-placeholder">[Bar/line chart: Sessions by hour]</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="analytics-tables">
