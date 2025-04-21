@@ -37,7 +37,7 @@ const SessionsPage = () => {
     <AdminLayout>
       <div className="sessions-page">
         <div className="page-header">
-          <h1>Sessions Management</h1>
+          <h1>Shopping Sessions</h1>
         </div>
         {renderView()}
       </div>

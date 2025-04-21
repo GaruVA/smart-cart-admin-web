@@ -324,20 +324,6 @@ body {
   font-style: italic;
 }
 
-/* Items & Carts & Sessions Tables */
-.items-page, .carts-page, .sessions-page, .analytics-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.items-header, .carts-header, .sessions-header, .analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
 .items-filters, .carts-filters, .sessions-filters, .analytics-filters {
   display: flex;
   gap: 1rem;
@@ -348,85 +334,6 @@ body {
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.search-input, .date-filter {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--medium-gray);
-  border-radius: 4px;
-  min-width: 200px;
-}
-
-.category-filter, .status-filter, .time-period {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--medium-gray);
-  border-radius: 4px;
-  min-width: 140px;
-}
-
-.items-table-container, .carts-table-container, .sessions-table-container, .analytics-tables {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.items-table, .carts-table, .sessions-table, .analytics-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.items-table th, .carts-table th, .analytics-table th {
-  background-color: #f7fafc;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: #4a5568;
-}
-
-.items-table td, .carts-table td, .analytics-table td {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.items-table tr:hover, .carts-table tr:hover, .analytics-table tr:hover {
-  background-color: #f7fafc;
-}
-
-/* Analytics Page */
-.analytics-page {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 0;
-}
-
-.analytics-charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.date-range {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.analytics-actions button {
-  padding: 0.5rem 1rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s;
-}
-
-.analytics-actions button:hover {
-  background-color: #303f9f;
 }
 
 /* Admin Login Page */
