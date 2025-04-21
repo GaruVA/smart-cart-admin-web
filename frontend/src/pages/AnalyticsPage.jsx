@@ -212,19 +212,34 @@ const AnalyticsPage = () => {
             )}
             {/* Inventory Analytics: Inventory Levels */}
             {activeTab === 'inventory' && (
-              <div className="chart-container">
-                <h3 style={{ marginBottom: 8 }}>Inventory Levels by Category</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={inventoryLevelsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                    <CartesianGrid stroke="#f5f5f5" />
-                    <XAxis dataKey="category" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="stock" fill="#4caf50" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Inventory Levels by Category</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={inventoryLevelsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                      <CartesianGrid stroke="#f5f5f5" />
+                      <XAxis dataKey="category" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="stock" fill="#4caf50" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="chart-container">
+                  <h3 style={{ marginBottom: 8 }}>Low Stock Items</h3>
+                  <table className="analytics-table">
+                    <thead>
+                      <tr><th>Product</th><th>Category</th><th>Qty</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Bananas</td><td>Fruits</td><td>4</td></tr>
+                      <tr><td>Milk</td><td>Dairy</td><td>3</td></tr>
+                      <tr><td>Bread</td><td>Bakery</td><td>5</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
             {/* Cart Analytics: Cart Status Distribution, Cart Usage */}
             {activeTab === 'carts' && (
@@ -286,43 +301,6 @@ const AnalyticsPage = () => {
               </>
             )}
           </div>
-        </div>
-        <div className="analytics-tables">
-          <h3>Low Stock Items</h3>
-          <table className="analytics-table">
-            <thead>
-              <tr>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th>Stock Quantity</th>
-                <th>Unit Price</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Organic Bananas</td>
-                <td>Fruits</td>
-                <td>4</td>
-                <td>$1.99</td>
-                <td>$7.96</td>
-              </tr>
-              <tr>
-                <td>Milk</td>
-                <td>Dairy</td>
-                <td>3</td>
-                <td>$3.49</td>
-                <td>$10.47</td>
-              </tr>
-              <tr>
-                <td>Bread</td>
-                <td>Bakery</td>
-                <td>5</td>
-                <td>$2.99</td>
-                <td>$14.95</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </AdminLayout>
