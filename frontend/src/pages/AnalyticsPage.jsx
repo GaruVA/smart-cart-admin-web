@@ -3,6 +3,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import '../styles/AdminStyles.css';
 import '../styles/analytics.css';
 import analyticsService from '../services/analyticsService';
+import reportService from '../services/reportService';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const REPORT_TYPES = [
@@ -35,6 +36,7 @@ const AnalyticsPage = () => {
   const [avgSessionValueData, setAvgSessionValueData] = useState([]);
   const [hourlySessionsData, setHourlySessionsData] = useState([]);
   const [lowStockItems, setLowStockItems] = useState([]);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     analyticsService.getAnalyticsKPIs()
@@ -68,12 +70,51 @@ const AnalyticsPage = () => {
     { label: 'Top Selling Category', value: analytics.topSellingCategory }
   ];
 
-  // SVG icons
-  const ArrowIcon = ({ direction, color }) => direction === 'up' ? (
-    <span className={color} style={{ marginRight: 4 }}>▲</span>
-  ) : (
-    <span className={color} style={{ marginRight: 4 }}>▼</span>
-  );
+  // Function to handle PDF export
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const { from, to } = dateRange;
+      
+      // Collect data based on selected report type
+      const reportData = {};
+      
+      // Add chart data based on report type
+      switch (reportType) {
+        case 'sales':
+          reportData.salesTrend = salesTrendData;
+          reportData.salesByCategory = salesByCategoryData;
+          break;
+        case 'inventory':
+          reportData.inventoryLevels = inventoryLevelsData;
+          reportData.lowStockItems = lowStockItems;
+          break;
+        case 'carts':
+          reportData.cartStatus = cartStatusData;
+          reportData.cartUsage = cartUsageData;
+          break;
+        case 'sessions':
+          reportData.avgSessionValue = avgSessionValueData;
+          reportData.hourlySessionActivity = hourlySessionsData;
+          break;
+        default:
+          break;
+      }
+      
+      // Get report title
+      const reportTitle = REPORT_TYPES.find(r => r.value === reportType)?.label || 'Analytics Report';
+      
+      // Export PDF
+      reportService.exportPDF(reportType, reportData, { 
+        from, to, title: reportTitle 
+      });
+      
+      setExporting(false);
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      setExporting(false);
+    }
+  };
 
   return (
     <AdminLayout loading={loading} error={error}>
@@ -111,7 +152,13 @@ const AnalyticsPage = () => {
           </div>
           </div>
           <div className="analytics-actions">
-            <button>Export Report</button>
+            <button 
+              onClick={handleExport}
+              disabled={exporting}
+              className="export-btn"
+            >
+              {exporting ? 'Exporting...' : 'Export PDF'}
+            </button>
           </div>
         </div>
         <div className="analytics-kpi-container">
@@ -141,29 +188,33 @@ const AnalyticsPage = () => {
               <>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Sales Trend (Last 7 Days)</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={salesTrendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="sales" stroke="#3f51b5" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={salesTrendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="sales" stroke="#3f51b5" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Sales by Category</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={salesByCategoryData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="sales" fill="#3f51b5" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={salesByCategoryData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="category" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="sales" fill="#3f51b5" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </>
             )}
@@ -172,16 +223,18 @@ const AnalyticsPage = () => {
               <>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Inventory Levels by Category</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={inventoryLevelsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="category" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="stock" fill="#4caf50" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={inventoryLevelsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="category" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="stock" fill="#4caf50" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Low Stock Items</h3>
@@ -207,26 +260,30 @@ const AnalyticsPage = () => {
               <>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Cart Status Distribution</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Tooltip />
-                      <Legend />
-                      <Pie data={cartStatusData} dataKey="value" nameKey="name" outerRadius={100} fill="#3f51b5" label />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Tooltip />
+                        <Legend />
+                        <Pie data={cartStatusData} dataKey="value" nameKey="name" outerRadius={100} fill="#3f51b5" label />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Cart Usage</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={cartUsageData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="cart" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="sessions" fill="#ff9800" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={cartUsageData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="cart" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="sessions" fill="#ff9800" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </>
             )}
@@ -235,29 +292,33 @@ const AnalyticsPage = () => {
               <>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Average Session Value (Last 7 Days)</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={avgSessionValueData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="value" stroke="#f50057" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={avgSessionValueData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="value" stroke="#f50057" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
                 <div className="chart-container">
                   <h3 style={{ marginBottom: 8 }}>Hourly Session Activity</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={hourlySessionsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                      <CartesianGrid stroke="#f5f5f5" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="sessions" fill="#3f51b5" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={hourlySessionsData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                        <CartesianGrid stroke="#f5f5f5" />
+                        <XAxis dataKey="hour" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="sessions" fill="#3f51b5" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </>
             )}
