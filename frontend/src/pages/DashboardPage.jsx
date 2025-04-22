@@ -11,7 +11,7 @@ const DashboardPage = () => {
 
   // Fetch KPI data on mount
   useEffect(() => {
-    analyticsService.getKPIs()
+    analyticsService.getDashboardKPIs()
       .then(res => {
         const { totalItems, totalCarts, activeSessions, totalSales } = res.data;
         setKpis([

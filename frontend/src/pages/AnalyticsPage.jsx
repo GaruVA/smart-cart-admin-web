@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 import '../styles/AdminStyles.css';
 import '../styles/analytics.css';
+import analyticsService from '../services/analyticsService';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const REPORT_TYPES = [
@@ -22,41 +23,22 @@ const AnalyticsPage = () => {
   const [reportType, setReportType] = useState('sales');
   const [dateRange, setDateRange] = useState({ from: '2025-04-15', to: '2025-04-22' });
   const [activeTab, setActiveTab] = useState('sales');
+  const [analytics, setAnalytics] = useState({ totalSales:0, averageSessionValue:0, conversionRate:0, topSellingCategory:'' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock KPIs
+  useEffect(() => {
+    analyticsService.getAnalyticsKPIs()
+      .then(res => { setAnalytics(res.data); setLoading(false); })
+      .catch(() => { setError('Failed to load analytics data'); setLoading(false); });
+  }, []);
+
+  // Dynamic KPIs from API
   const kpis = [
-    {
-      label: 'Total Sales',
-      value: '$24,589.99',
-      change: '+15.2%',
-      changeColor: 'analytics-kpi-up',
-      icon: 'up',
-      sub: 'from previous period',
-    },
-    {
-      label: 'Average Cart Value',
-      value: '$42.75',
-      change: '+8.5%',
-      changeColor: 'analytics-kpi-up',
-      icon: 'up',
-      sub: 'from previous period',
-    },
-    {
-      label: 'Conversion Rate',
-      value: '68.3%',
-      change: '-2.1%',
-      changeColor: 'analytics-kpi-down',
-      icon: 'down',
-      sub: 'from previous period',
-    },
-    {
-      label: 'Top Selling Category',
-      value: 'Dairy',
-      change: '+12.4%',
-      changeColor: 'analytics-kpi-up',
-      icon: 'up',
-      sub: 'from previous period',
-    },
+    { label: 'Total Sales', value: `$${analytics.totalSales.toFixed(2)}` },
+    { label: 'Average Session Value', value: `$${analytics.averageSessionValue.toFixed(2)}` },
+    { label: 'Conversion Rate', value: `${analytics.conversionRate.toFixed(2)}%` },
+    { label: 'Top Selling Category', value: analytics.topSellingCategory }
   ];
 
   // Mock chart data
@@ -114,7 +96,7 @@ const AnalyticsPage = () => {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout loading={loading} error={error}>
       <div className="analytics-page">
         <div className="analytics-header">
           <h1>Analytics &amp; Reports</h1>
@@ -157,11 +139,6 @@ const AnalyticsPage = () => {
             <div key={i} className="analytics-kpi">
               <h3>{kpi.label}</h3>
               <div className="analytics-kpi-value">{kpi.value}</div>
-              <div style={{ display: 'flex', alignItems: 'center', fontSize: 13, marginTop: 4 }}>
-                <ArrowIcon direction={kpi.icon} color={kpi.changeColor} />
-                <span className={kpi.changeColor}>{kpi.change}</span>
-                <span style={{ marginLeft: 6, color: '#757575' }}>{kpi.sub}</span>
-              </div>
             </div>
           ))}
         </div>
