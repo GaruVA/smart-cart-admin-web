@@ -68,12 +68,12 @@ const DashboardPage = () => {
           <h3>Low Stock Items</h3>
           <table className="analytics-table">
             <thead>
-              <tr><th>Product</th><th>Category</th><th>Qty</th><th>Threshold</th></tr>
+              <tr><th>Product</th><th>Category</th><th>Qty</th></tr>
             </thead>
             <tbody>
-              <tr><td>Bananas</td><td>Fruits</td><td>4</td><td>10</td></tr>
-              <tr><td>Milk</td><td>Dairy</td><td>3</td><td>10</td></tr>
-              <tr><td>Bread</td><td>Bakery</td><td>5</td><td>10</td></tr>
+              <tr><td>Bananas</td><td>Fruits</td><td>4</td></tr>
+              <tr><td>Milk</td><td>Dairy</td><td>3</td></tr>
+              <tr><td>Bread</td><td>Bakery</td><td>5</td></tr>
             </tbody>
           </table>
         </div>
