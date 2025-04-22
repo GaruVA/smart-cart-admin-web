@@ -1,18 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import analyticsService from '../services/analyticsService';
 import AdminLayout from '../layouts/AdminLayout';
 import '../styles/analytics.css';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 const DashboardPage = () => {
-  // Mock KPI data
-  const kpis = [
-    { label: 'Total Items', value: '1245', change: '12%', sub: 'from last month', changeColor: 'analytics-kpi-up' },
-    { label: 'Total Carts', value: '28', change: '3%', sub: 'from last month', changeColor: 'analytics-kpi-up' },
-    { label: 'Active Sessions', value: '8', change: '2%', sub: 'from yesterday', changeColor: 'analytics-kpi-up' },
-    { label: 'Total Sales', value: '$8,459.99', change: '15%', sub: 'from last week', changeColor: 'analytics-kpi-up' },
-  ];
+  const [kpis, setKpis] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock chart data
+  // Fetch KPI data on mount
+  useEffect(() => {
+    analyticsService.getKPIs()
+      .then(res => {
+        const { totalItems, totalCarts, activeSessions, totalSales } = res.data;
+        setKpis([
+          { label: 'Total Items', value: totalItems, change: null, sub: null, changeColor: '' },
+          { label: 'Total Carts', value: totalCarts, change: null, sub: null, changeColor: '' },
+          { label: 'Active Sessions', value: activeSessions, change: null, sub: null, changeColor: '' },
+          { label: 'Total Sales', value: `$${totalSales.toFixed(2)}`, change: null, sub: null, changeColor: '' },
+        ]);
+      })
+      .catch(err => setError('Failed to load KPIs'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Mock chart data remains unchanged
   const salesTrendData = [
     { date: '04-16', sales: 1056 },{ date: '04-17', sales: 1346 },{ date: '04-18', sales: 1246 },
     { date: '04-19', sales: 1456 },{ date: '04-20', sales: 1178 },{ date: '04-21', sales: 1320 },{ date: '04-22', sales: 1405 }
@@ -24,9 +37,9 @@ const DashboardPage = () => {
   const sessionStatusData = [ { name: 'Completed', value: 265 }, { name: 'Active', value: 120 }, { name: 'Abandoned', value: 122 } ];
 
   return (
-    <AdminLayout>
+    <AdminLayout loading={loading} error={error}>
       <div className="analytics-page">
-      <div class="page-header"><h1>Dashboard</h1></div>
+        <div className="page-header"><h1>Dashboard</h1></div>
         <div className="analytics-kpi-container">
           {kpis.map((kpi, i) => (
             <div key={i} className="analytics-kpi">
@@ -63,7 +76,7 @@ const DashboardPage = () => {
             </ResponsiveContainer>
           </div>
           
-        </div>
+          </div>
         <div className="analytics-tables">
           <h3>Low Stock Items</h3>
           <table className="analytics-table">

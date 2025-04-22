@@ -47,9 +47,7 @@ app.get('/', (req, res) => {
 // Only set up routes if Firebase is initialized
 if (firebaseInitialized) {
   // Routes
-//   app.use('/api/items', require('./routes/items'));
-//   app.use('/api/cart', require('./routes/cart'));
-//   app.use('/api/analytics', require('./routes/analytics'));
+  app.use('/api/v1/analytics', require('./routes/analytics'));
 } else {
   // Fallback routes for when Firebase is not initialized
   app.get('/api/*', (req, res) => {

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/AdminStyles.css';
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = ({ children, loading, error }) => {
   const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -92,7 +92,13 @@ const AdminLayout = ({ children }) => {
         {/* Main Content */}
         <main className="admin-main">
           <div className="content-wrapper">
-            {children}
+            {loading ? (
+              <div className="loading"></div>
+            ) : error ? (
+              <div className="loading">{error}</div>
+            ) : (
+              children
+            )}
           </div>
         </main>
       </div>
