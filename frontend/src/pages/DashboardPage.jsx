@@ -25,10 +25,9 @@ const DashboardPage = () => {
       analyticsService.getDashboardKPIs(),
       analyticsService.getSalesTrend(weekAgoStr, todayStr),
       analyticsService.getCartStatus(),
-      // Fetch items data for low stock table
-      analyticsService.getInventoryLevels()
+      analyticsService.getLowStockItems(20) // Fetch low stock items with threshold of 20
     ])
-    .then(([kpisRes, salesTrendRes, cartStatusRes, inventoryRes]) => {
+    .then(([kpisRes, salesTrendRes, cartStatusRes, lowStockRes]) => {
       // Set KPIs
       const { totalItems, totalCarts, activeSessions, totalSales } = kpisRes.data;
       setKpis([
@@ -44,15 +43,8 @@ const DashboardPage = () => {
       // Set cart status data
       setCartStatusData(cartStatusRes.data);
       
-      // Find low stock items for table
-      // In a real implementation, this would come from a dedicated endpoint
-      // Here we're simulating it by filtering inventory data
-      const itemsSnap = inventoryRes.data;
-      setLowStockItems([
-        { name: 'Bananas', category: 'Fruits', quantity: 4 },
-        { name: 'Milk', category: 'Dairy', quantity: 3 },
-        { name: 'Bread', category: 'Bakery', quantity: 5 }
-      ]);
+      // Set low stock items from API
+      setLowStockItems(lowStockRes.data);
       
       setLoading(false);
     })

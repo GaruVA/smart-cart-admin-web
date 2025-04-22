@@ -12,6 +12,7 @@ router.get('/analytics-kpis', analyticsController.getAnalyticsKPIs);
 router.get('/sales-trend', analyticsController.getSalesTrend);
 router.get('/sales-by-category', analyticsController.getSalesByCategory);
 router.get('/inventory-levels', analyticsController.getInventoryLevels);
+router.get('/low-stock-items', analyticsController.getLowStockItems);
 router.get('/cart-status', analyticsController.getCartStatus);
 router.get('/session-status', analyticsController.getSessionStatus);
 router.get('/cart-usage', analyticsController.getCartUsage);

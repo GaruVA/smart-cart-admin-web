@@ -34,6 +34,7 @@ const AnalyticsPage = () => {
   const [cartUsageData, setCartUsageData] = useState([]);
   const [avgSessionValueData, setAvgSessionValueData] = useState([]);
   const [hourlySessionsData, setHourlySessionsData] = useState([]);
+  const [lowStockItems, setLowStockItems] = useState([]);
 
   useEffect(() => {
     analyticsService.getAnalyticsKPIs()
@@ -48,6 +49,7 @@ const AnalyticsPage = () => {
       analyticsService.getSalesByCategory(from, to).then(res => setSalesByCategoryData(res.data));
     } else if (activeTab === 'inventory') {
       analyticsService.getInventoryLevels().then(res => setInventoryLevelsData(res.data));
+      analyticsService.getLowStockItems(20).then(res => setLowStockItems(res.data));
     } else if (activeTab === 'carts') {
       analyticsService.getCartStatus().then(res => setCartStatusData(res.data));
       analyticsService.getCartUsage(from, to).then(res => setCartUsageData(res.data));
@@ -188,9 +190,13 @@ const AnalyticsPage = () => {
                       <tr><th>Product</th><th>Category</th><th>Qty</th></tr>
                     </thead>
                     <tbody>
-                      <tr><td>Bananas</td><td>Fruits</td><td>4</td></tr>
-                      <tr><td>Milk</td><td>Dairy</td><td>3</td></tr>
-                      <tr><td>Bread</td><td>Bakery</td><td>5</td></tr>
+                      {lowStockItems.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.name}</td>
+                          <td>{item.category}</td>
+                          <td>{item.quantity}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

@@ -322,3 +322,34 @@ exports.getSalesByCategory = async (req, res) => {
     return res.status(500).json({ error: 'Failed to fetch sales by category' });
   }
 };
+
+// Low Stock Items: Get items with stock below a threshold
+exports.getLowStockItems = async (req, res) => {
+  try {
+    // Get threshold from query param or use default of 10
+    const threshold = parseInt(req.query.threshold) || 10;
+    
+    // Get all items
+    const itemsSnap = await db.collection('items').get();
+    
+    // Filter items with low stock
+    const lowStockItems = itemsSnap.docs
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: data.id || doc.id,
+          name: data.name,
+          category: data.category,
+          quantity: data.stockQuantity
+        };
+      })
+      .filter(item => item.quantity <= threshold)
+      // Sort by quantity (ascending)
+      .sort((a, b) => a.quantity - b.quantity);
+    
+    return res.json(lowStockItems);
+  } catch (error) {
+    console.error('Error fetching low stock items:', error);
+    return res.status(500).json({ error: 'Failed to fetch low stock items' });
+  }
+};

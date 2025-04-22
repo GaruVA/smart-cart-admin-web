@@ -15,6 +15,7 @@ const analyticsService = {
   getCartUsage: (from, to) => api.get('/analytics/cart-usage', { params: { from, to } }),
   getAvgSessionValue: (from, to) => api.get('/analytics/avg-session-value', { params: { from, to } }),
   getHourlySessionActivity: (date) => api.get('/analytics/hourly-session-activity', { params: { date } }),
+  getLowStockItems: (threshold) => api.get('/analytics/low-stock-items', { params: { threshold } }),
 };
 
 export default analyticsService;
