@@ -26,6 +26,14 @@ const AnalyticsPage = () => {
   const [analytics, setAnalytics] = useState({ totalSales:0, averageSessionValue:0, conversionRate:0, topSellingCategory:'' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [salesTrendData, setSalesTrendData] = useState([]);
+  const [salesByCategoryData, setSalesByCategoryData] = useState([]);
+  const [inventoryLevelsData, setInventoryLevelsData] = useState([]);
+  const [cartStatusData, setCartStatusData] = useState([]);
+  const [sessionStatusData, setSessionStatusData] = useState([]);
+  const [cartUsageData, setCartUsageData] = useState([]);
+  const [avgSessionValueData, setAvgSessionValueData] = useState([]);
+  const [hourlySessionsData, setHourlySessionsData] = useState([]);
 
   useEffect(() => {
     analyticsService.getAnalyticsKPIs()
@@ -33,59 +41,29 @@ const AnalyticsPage = () => {
       .catch(() => { setError('Failed to load analytics data'); setLoading(false); });
   }, []);
 
+  useEffect(() => {
+    const { from, to } = dateRange;
+    if (activeTab === 'sales') {
+      analyticsService.getSalesTrend(from, to).then(res => setSalesTrendData(res.data));
+      analyticsService.getSalesByCategory(from, to).then(res => setSalesByCategoryData(res.data));
+    } else if (activeTab === 'inventory') {
+      analyticsService.getInventoryLevels().then(res => setInventoryLevelsData(res.data));
+    } else if (activeTab === 'carts') {
+      analyticsService.getCartStatus().then(res => setCartStatusData(res.data));
+      analyticsService.getCartUsage(from, to).then(res => setCartUsageData(res.data));
+    } else if (activeTab === 'sessions') {
+      analyticsService.getAvgSessionValue(from, to).then(res => setAvgSessionValueData(res.data));
+      analyticsService.getHourlySessionActivity(dateRange.from).then(res => setHourlySessionsData(res.data));
+      analyticsService.getSessionStatus().then(res => setSessionStatusData(res.data));
+    }
+  }, [activeTab, dateRange]);
+
   // Dynamic KPIs from API
   const kpis = [
     { label: 'Total Sales', value: `$${analytics.totalSales.toFixed(2)}` },
     { label: 'Average Session Value', value: `$${analytics.averageSessionValue.toFixed(2)}` },
     { label: 'Conversion Rate', value: `${analytics.conversionRate.toFixed(2)}%` },
     { label: 'Top Selling Category', value: analytics.topSellingCategory }
-  ];
-
-  // Mock chart data
-  const salesTrendData = [
-    { date: '2025-04-16', sales: 1056 },
-    { date: '2025-04-17', sales: 1346 },
-    { date: '2025-04-18', sales: 1246 },
-    { date: '2025-04-19', sales: 1456 },
-    { date: '2025-04-20', sales: 1178 },
-    { date: '2025-04-21', sales: 1320 },
-    { date: '2025-04-22', sales: 1405 }
-  ];
-  const salesByCategoryData = [
-    { category: 'Fruits', sales: 5400 },
-    { category: 'Dairy', sales: 4200 },
-    { category: 'Bakery', sales: 3500 },
-    { category: 'Meat', sales: 2800 }
-  ];
-  const inventoryLevelsData = [
-    { category: 'Fruits', stock: 120 },
-    { category: 'Dairy', stock: 75 },
-    { category: 'Bakery', stock: 50 },
-    { category: 'Meat', stock: 30 }
-  ];
-  const cartStatusData = [
-    { name: 'Online', value: 45 },
-    { name: 'Offline', value: 30 },
-    { name: 'Maintenance', value: 25 }
-  ];
-  const cartUsageData = [
-    { cart: 'CART-001', sessions: 15 },
-    { cart: 'CART-002', sessions: 12 },
-    { cart: 'CART-003', sessions: 20 }
-  ];
-  const avgSessionValueData = [
-    { date: '2025-04-16', value: 58.2 },
-    { date: '2025-04-17', value: 62.5 },
-    { date: '2025-04-18', value: 64.3 },
-    { date: '2025-04-19', value: 59.8 },
-    { date: '2025-04-20', value: 61.0 },
-    { date: '2025-04-21', value: 63.7 },
-    { date: '2025-04-22', value: 65.4 }
-  ];
-  const hourlySessionsData = [
-    { hour: '08', sessions: 5 }, { hour: '09', sessions: 8 }, { hour: '10', sessions: 12 },
-    { hour: '11', sessions: 15 }, { hour: '12', sessions: 20 }, { hour: '13', sessions: 18 },
-    { hour: '14', sessions: 22 }, { hour: '15', sessions: 17 }, { hour: '16', sessions: 14 }
   ];
 
   // SVG icons

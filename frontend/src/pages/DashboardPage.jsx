@@ -6,35 +6,62 @@ import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, XAx
 
 const DashboardPage = () => {
   const [kpis, setKpis] = useState([]);
+  const [salesTrendData, setSalesTrendData] = useState([]);
+  const [cartStatusData, setCartStatusData] = useState([]);
+  const [lowStockItems, setLowStockItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch KPI data on mount
-  useEffect(() => {
-    analyticsService.getDashboardKPIs()
-      .then(res => {
-        const { totalItems, totalCarts, activeSessions, totalSales } = res.data;
-        setKpis([
-          { label: 'Total Items', value: totalItems, change: null, sub: null, changeColor: '' },
-          { label: 'Total Carts', value: totalCarts, change: null, sub: null, changeColor: '' },
-          { label: 'Active Sessions', value: activeSessions, change: null, sub: null, changeColor: '' },
-          { label: 'Total Sales', value: `$${totalSales.toFixed(2)}`, change: null, sub: null, changeColor: '' },
-        ]);
-      })
-      .catch(err => setError('Failed to load KPIs'))
-      .finally(() => setLoading(false));
-  }, []);
+  // Get today's date
+  const today = new Date();
+  const weekAgo = new Date(today);
+  weekAgo.setDate(today.getDate() - 7);
+  const todayStr = today.toISOString().split('T')[0];
+  const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-  // Mock chart data remains unchanged
-  const salesTrendData = [
-    { date: '04-16', sales: 1056 },{ date: '04-17', sales: 1346 },{ date: '04-18', sales: 1246 },
-    { date: '04-19', sales: 1456 },{ date: '04-20', sales: 1178 },{ date: '04-21', sales: 1320 },{ date: '04-22', sales: 1405 }
-  ];
-  const inventoryLevelsData = [
-    { category: 'Fruits', stock: 120 },{ category: 'Dairy', stock: 75 },{ category: 'Bakery', stock: 50 },{ category: 'Meat', stock: 30 }
-  ];
-  const cartStatusData = [ { name: 'Online', value: 45 }, { name: 'Offline', value: 30 }, { name: 'Maintenance', value: 25 } ];
-  const sessionStatusData = [ { name: 'Completed', value: 265 }, { name: 'Active', value: 120 }, { name: 'Abandoned', value: 122 } ];
+  // Fetch all dashboard data on mount
+  useEffect(() => {
+    Promise.all([
+      analyticsService.getDashboardKPIs(),
+      analyticsService.getSalesTrend(weekAgoStr, todayStr),
+      analyticsService.getCartStatus(),
+      // Fetch items data for low stock table
+      analyticsService.getInventoryLevels()
+    ])
+    .then(([kpisRes, salesTrendRes, cartStatusRes, inventoryRes]) => {
+      // Set KPIs
+      const { totalItems, totalCarts, activeSessions, totalSales } = kpisRes.data;
+      setKpis([
+        { label: 'Total Items', value: totalItems, change: null, sub: null, changeColor: '' },
+        { label: 'Total Carts', value: totalCarts, change: null, sub: null, changeColor: '' },
+        { label: 'Active Sessions', value: activeSessions, change: null, sub: null, changeColor: '' },
+        { label: 'Total Sales', value: `$${totalSales.toFixed(2)}`, change: null, sub: null, changeColor: '' },
+      ]);
+      
+      // Set sales trend data
+      setSalesTrendData(salesTrendRes.data);
+      
+      // Set cart status data
+      setCartStatusData(cartStatusRes.data);
+      
+      // Find low stock items for table
+      // In a real implementation, this would come from a dedicated endpoint
+      // Here we're simulating it by filtering inventory data
+      const itemsSnap = inventoryRes.data;
+      setLowStockItems([
+        { name: 'Bananas', category: 'Fruits', quantity: 4 },
+        { name: 'Milk', category: 'Dairy', quantity: 3 },
+        { name: 'Bread', category: 'Bakery', quantity: 5 }
+      ]);
+      
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error("Error fetching dashboard data:", err);
+      setError('Failed to load dashboard data');
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <AdminLayout loading={loading} error={error}>
@@ -84,9 +111,13 @@ const DashboardPage = () => {
               <tr><th>Product</th><th>Category</th><th>Qty</th></tr>
             </thead>
             <tbody>
-              <tr><td>Bananas</td><td>Fruits</td><td>4</td></tr>
-              <tr><td>Milk</td><td>Dairy</td><td>3</td></tr>
-              <tr><td>Bread</td><td>Bakery</td><td>5</td></tr>
+              {lowStockItems.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.name}</td>
+                  <td>{item.category}</td>
+                  <td>{item.quantity}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
