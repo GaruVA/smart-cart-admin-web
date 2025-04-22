@@ -34,10 +34,11 @@ const db = admin.firestore();
 
 // Mock cart device data (physical smart cart devices)
 const mockCarts = [
+  // Original carts
   {
     status: 'online',
     createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 0, 15)),  // Jan 15, 2025
-    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 8, 45))  // Apr 19, 2025, 8:45 AM
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 8, 45))  // Apr 21, 2025, 8:45 AM
   },
   {
     status: 'offline',
@@ -52,12 +53,38 @@ const mockCarts = [
   {
     status: 'online',
     createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 5)),  // Mar 5, 2025
-    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 9, 12))  // Apr 19, 2025, 9:12 AM
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 9, 12))  // Apr 21, 2025, 9:12 AM
   },
   {
     status: 'online',
     createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 10)),  // Mar 10, 2025
-    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 10, 5))  // Apr 19, 2025, 10:05 AM
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 10, 5))  // Apr 21, 2025, 10:05 AM
+  },
+  // Additional carts
+  {
+    status: 'online',
+    createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 1)),  // Mar 1, 2025
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 11, 30))  // Apr 21, 2025, 11:30 AM
+  },
+  {
+    status: 'online',
+    createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 1)),  // Mar 1, 2025
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 14, 15))  // Apr 21, 2025, 2:15 PM
+  },
+  {
+    status: 'offline',
+    createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 5)),  // Mar 5, 2025
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 20, 17, 40))  // Apr 20, 2025, 5:40 PM
+  },
+  {
+    status: 'maintenance',
+    createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 10)),  // Mar 10, 2025
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 13, 25))  // Apr 19, 2025, 1:25 PM
+  },
+  {
+    status: 'online',
+    createdAt: admin.firestore.Timestamp.fromDate(new Date(2025, 2, 15)),  // Mar 15, 2025
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 21, 15, 50))  // Apr 21, 2025, 3:50 PM
   }
 ];
 

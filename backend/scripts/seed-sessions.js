@@ -43,99 +43,124 @@ async function getCartIds() {
   }
 }
 
-// Mock shopping sessions data template (cartIds will be filled in dynamically)
-const createMockSessions = (cartIds) => {
-  // Make sure we have at least one cartId to work with
-  if (!cartIds.length) {
-    console.error('No carts found in the database. Please run seed-carts.js first.');
-    process.exit(1);
+// Function to generate a random time between given hours
+function randomTimeBetween(startHour, endHour) {
+  const hour = Math.floor(Math.random() * (endHour - startHour + 1)) + startHour;
+  const minute = Math.floor(Math.random() * 60);
+  return { hour, minute };
+}
+
+// Function to create a timestamp for a specific date with random time in given range
+function createTimestamp(date, startHour, endHour) {
+  const { hour, minute } = randomTimeBetween(startHour, endHour);
+  const newDate = new Date(date);
+  newDate.setHours(hour, minute);
+  return admin.firestore.Timestamp.fromDate(newDate);
+}
+
+// Function to generate mock sessions for a specific date
+function generateSessionsForDate(date, cartIds) {
+  // Create between 1-3 sessions per day
+  const numSessions = Math.floor(Math.random() * 3) + 1;
+  const sessions = [];
+  
+  for (let i = 0; i < numSessions; i++) {
+    let sessionType;
+    // Distribute session types roughly: 60% completed, 25% active, 15% abandoned
+    const rand = Math.random();
+    if (rand < 0.6) {
+      sessionType = 'completed';
+    } else if (rand < 0.85) {
+      sessionType = 'abandoned';
+    } else {
+      sessionType = 'active';
+    }
+    
+    // Set different time ranges based on session time
+    let startTime, endTime;
+    if (i === 0) {
+      // Morning session
+      startTime = createTimestamp(date, 8, 11);
+    } else if (i === 1) {
+      // Afternoon session
+      startTime = createTimestamp(date, 12, 16);
+    } else {
+      // Evening session
+      startTime = createTimestamp(date, 17, 20);
+    }
+    
+    // For completed sessions, create end time 20-40 minutes after start
+    if (sessionType === 'completed') {
+      const startDate = startTime.toDate();
+      const endDate = new Date(startDate);
+      endDate.setMinutes(startDate.getMinutes() + Math.floor(Math.random() * 21) + 20); // 20-40 minutes
+      endTime = admin.firestore.Timestamp.fromDate(endDate);
+    } else {
+      endTime = null;
+    }
+
+    // Create random basket of items (1-6 items)
+    const numItems = Math.floor(Math.random() * 6) + 1;
+    const itemPool = [
+      { itemId: '5901234123457', unitPrice: 1.99 }, // Organic Bananas
+      { itemId: '4003994155486', unitPrice: 3.49 }, // Whole Milk
+      { itemId: '7622210100146', unitPrice: 4.99 }, // Wheat Bread
+      { itemId: '0796030176614', unitPrice: 6.99 }, // Premium Ground Beef
+      { itemId: '4033800226004', unitPrice: 2.49 }, // Gala Apples
+      { itemId: '0041331092609', unitPrice: 3.99 }, // Eggs
+      { itemId: '0023700043171', unitPrice: 5.49 }, // Chicken Breast
+      { itemId: '0074682501756', unitPrice: 8.99 }, // Atlantic Salmon
+      { itemId: '0011110000123', unitPrice: 1.29 }, // Bell Peppers
+      { itemId: '0011110000124', unitPrice: 0.99 }, // Carrots
+      { itemId: '0011110000125', unitPrice: 3.49 }, // Potatoes
+      { itemId: '0011110000126', unitPrice: 4.99 }, // Greek Yogurt
+      { itemId: '0011110000127', unitPrice: 3.29 }, // Cheddar Cheese
+      { itemId: '0011110000128', unitPrice: 2.99 }, // White Rice
+      { itemId: '0011110000129', unitPrice: 1.49 }, // Pasta
+      { itemId: '0011110000130', unitPrice: 3.99 }, // Cereal
+      { itemId: '0011110000131', unitPrice: 4.29 }, // Orange Juice
+      { itemId: '0011110000132', unitPrice: 7.99 }, // Coffee
+      { itemId: '0011110000133', unitPrice: 5.99 }, // Toilet Paper
+      { itemId: '0011110000134', unitPrice: 4.99 }  // Paper Towels
+    ];
+
+    // Select random items
+    const items = [];
+    let totalCost = 0;
+    
+    // Shuffle the item pool and pick the first numItems
+    const shuffled = [...itemPool].sort(() => 0.5 - Math.random());
+    for (let j = 0; j < numItems; j++) {
+      const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 of each item
+      const { itemId, unitPrice } = shuffled[j];
+      const itemCost = quantity * unitPrice;
+      totalCost += itemCost;
+      
+      items.push({
+        itemId,
+        quantity,
+        unitPrice
+      });
+    }
+    
+    // Round total cost to 2 decimal places
+    totalCost = Math.round(totalCost * 100) / 100;
+    
+    // Create the session
+    const session = {
+      items,
+      totalCost,
+      cartId: cartIds[Math.floor(Math.random() * cartIds.length)],
+      startedAt: startTime,
+      endedAt: endTime,
+      status: sessionType
+    };
+    
+    sessions.push(session);
   }
   
-  // Function to get a random cart ID from our list
-  const getRandomCartId = () => cartIds[Math.floor(Math.random() * cartIds.length)];
-  
-  return [
-    {
-      items: [
-        { itemId: '5901234123457', quantity: 2, unitPrice: 1.99 }, // Organic Bananas
-        { itemId: '4003994155486', quantity: 1, unitPrice: 3.49 }  // Whole Milk
-      ],
-      totalCost: 7.47,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 9, 30)), // April 19, 2025, 9:30 AM
-      endedAt: null,
-      status: 'active'
-    },
-    {
-      items: [
-        { itemId: '7622210100146', quantity: 1, unitPrice: 4.99 },  // Wheat Bread
-        { itemId: '0041331092609', quantity: 2, unitPrice: 3.99 },  // Eggs
-        { itemId: '0023700043171', quantity: 1, unitPrice: 5.49 }   // Chicken Breast
-      ],
-      totalCost: 18.46,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 18, 15, 15)), // April 18, 2025, 3:15 PM
-      endedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 18, 15, 40)),   // April 18, 2025, 3:40 PM
-      status: 'completed'
-    },
-    {
-      items: [
-        { itemId: '5901234123457', quantity: 1, unitPrice: 1.99 },  // Organic Bananas
-        { itemId: '0041331092609', quantity: 1, unitPrice: 3.99 }   // Eggs
-      ],
-      totalCost: 5.98,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 18, 11, 20)), // April 18, 2025, 11:20 AM
-      endedAt: null,
-      status: 'abandoned'
-    },
-    {
-      items: [
-        { itemId: '0796030176614', quantity: 2, unitPrice: 6.99 },   // Premium Ground Beef
-        { itemId: '0074682501756', quantity: 1, unitPrice: 8.99 },   // Atlantic Salmon
-        { itemId: '4003994155486', quantity: 1, unitPrice: 3.49 }    // Whole Milk
-      ],
-      totalCost: 26.46,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 17, 14, 10)), // April 17, 2025, 2:10 PM
-      endedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 17, 14, 35)),   // April 17, 2025, 2:35 PM
-      status: 'completed'
-    },
-    {
-      items: [
-        { itemId: '4033800226004', quantity: 4, unitPrice: 2.49 },  // Gala Apples
-        { itemId: '7622210100146', quantity: 1, unitPrice: 4.99 }   // Wheat Bread
-      ],
-      totalCost: 14.95,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 19, 10, 15)), // April 19, 2025, 10:15 AM
-      endedAt: null,
-      status: 'active'
-    },
-    {
-      items: [
-        { itemId: '0023700043171', quantity: 2, unitPrice: 5.49 },   // Chicken Breast
-        { itemId: '0074682501756', quantity: 1, unitPrice: 8.99 }    // Atlantic Salmon
-      ],
-      totalCost: 19.97,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 16, 16, 45)), // April 16, 2025, 4:45 PM
-      endedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 16, 17, 10)),   // April 16, 2025, 5:10 PM
-      status: 'completed'
-    },
-    {
-      items: [
-        { itemId: '7622210100146', quantity: 1, unitPrice: 4.99 },  // Wheat Bread
-        { itemId: '4003994155486', quantity: 1, unitPrice: 3.49 }   // Whole Milk
-      ],
-      totalCost: 8.48,
-      cartId: getRandomCartId(),
-      startedAt: admin.firestore.Timestamp.fromDate(new Date(2025, 3, 18, 8, 20)), // April 18, 2025, 8:20 AM
-      endedAt: null,
-      status: 'abandoned'
-    }
-  ];
-};
+  return sessions;
+}
 
 // Function to add mock data to Firestore
 async function seedDatabase() {
@@ -146,8 +171,23 @@ async function seedDatabase() {
     const cartIds = await getCartIds();
     console.log(`Found ${cartIds.length} carts to reference in sessions`);
     
-    // Generate mock sessions with real cart references
-    const mockSessions = createMockSessions(cartIds);
+    if (cartIds.length === 0) {
+      console.error('No carts found in the database. Please run seed-carts.js first.');
+      process.exit(1);
+    }
+    
+    // Generate sessions for the past week (April 15-22, 2025)
+    const mockSessions = [];
+    const today = new Date(2025, 3, 22); // April 22, 2025
+    
+    for (let i = 0; i < 8; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const sessionsForDate = generateSessionsForDate(date, cartIds);
+      mockSessions.push(...sessionsForDate);
+    }
+    
+    console.log(`Generated ${mockSessions.length} mock sessions across 8 days`);
     
     // Create a batch to write all documents at once
     const batch = db.batch();
