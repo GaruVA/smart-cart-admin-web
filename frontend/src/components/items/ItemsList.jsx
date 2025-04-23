@@ -1,55 +1,43 @@
 // src/components/items/ItemsList.jsx
 import React, { useState, useEffect } from 'react';
 
-// Using mock data for initial development
-const mockItems = [
-  { id: '8901234567890', name: 'Apple', category: 'Fruits', price: 2.99, stockQuantity: 150, description: 'Fresh red apples' },
-  { id: '8901234567891', name: 'Milk', category: 'Dairy', price: 3.49, stockQuantity: 75, description: '1 gallon whole milk' },
-  { id: '8901234567892', name: 'Bread', category: 'Bakery', price: 2.50, stockQuantity: 50, description: 'Whole wheat bread' },
-  { id: '8901234567893', name: 'Chicken', category: 'Meat', price: 7.99, stockQuantity: 30, description: 'Boneless chicken breast' },
-  { id: '8901234567894', name: 'Rice', category: 'Grains', price: 4.99, stockQuantity: 100, description: 'Basmati rice 2kg' }
-];
-
-const ItemsList = ({ onViewDetail, onAddNew, onEditItem, onDeleteItem }) => {
-  // States for items, filtering, sorting
-  const [items, setItems] = useState([]);
+const ItemsList = ({ items, loading, error, onViewDetail, onAddNew, onEditItem, onDeleteItem }) => {
+  // States for filtering, sorting
   const [filteredItems, setFilteredItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
   const [categories, setCategories] = useState([]);
   
-  // Load items on component mount
+  // Extract categories and set up filtering
   useEffect(() => {
-    // In future this would be an API call
-    setItems(mockItems);
-    setFilteredItems(mockItems);
+    if (items && items.length > 0) {
+      // Extract unique categories
+      const uniqueCategories = [...new Set(items.map(item => item.category))];
+      setCategories(uniqueCategories);
+      
+      // Apply filters and sorting
+      let results = [...items];
+      
+      if (searchTerm) {
+        results = results.filter(item =>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.id.includes(searchTerm)
+        );
+      }
+      
+      if (categoryFilter) {
+        results = results.filter(item => item.category === categoryFilter);
+      }
     
-    // Extract categories for filter dropdown
-    const uniqueCategories = [...new Set(mockItems.map(item => item.category))];
-    setCategories(uniqueCategories);
-  }, []);
-  
-  // Apply filters when search or category changes
-  useEffect(() => {
-    let results = items;
-    
-    if (searchTerm) {
-      results = results.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.id.includes(searchTerm)
-      );
+      // Apply current sort
+      results = sortItems(results);
+      setFilteredItems(results);
+    } else {
+      setFilteredItems([]);
     }
-    
-    if (categoryFilter) {
-      results = results.filter(item => item.category === categoryFilter);
-    }
-    
-    // Apply current sort
-    results = sortItems(results);
-    setFilteredItems(results);
-  }, [searchTerm, categoryFilter, items, sortConfig]);
+  }, [items, searchTerm, categoryFilter, sortConfig]);
   
   // Handle sorting
   const requestSort = (key) => {
@@ -78,6 +66,14 @@ const ItemsList = ({ onViewDetail, onAddNew, onEditItem, onDeleteItem }) => {
     setSearchTerm('');
     setCategoryFilter('');
   };
+
+  if (loading) {
+    return <div className="loading">Loading items...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
   
   return (
     <div className="items-list">

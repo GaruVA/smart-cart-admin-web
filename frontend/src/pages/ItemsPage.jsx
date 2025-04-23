@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import ItemsList from '../components/items/ItemsList';
 import ItemDetail from '../components/items/ItemDetail';
 import ItemForm from '../components/items/ItemForm';
+import itemsService from '../services/itemsService';
 import '../styles/items.css';
 import AdminLayout from '../layouts/AdminLayout';
 
-// In future, import the actual service
+
 // import itemsService from '../services/itemsService';
 
 const ItemsPage = () => {
@@ -14,30 +15,26 @@ const ItemsPage = () => {
   const [view, setView] = useState('list'); // 'list', 'detail', 'add', 'edit'
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [items, setItems] = useState([]);
-  
-  // Mock data for initial development
-  const mockItems = [
-    { id: '8901234567890', name: 'Apple', category: 'Fruits', price: 2.99, stockQuantity: 150, description: 'Fresh red apples' },
-    { id: '8901234567891', name: 'Milk', category: 'Dairy', price: 3.49, stockQuantity: 75, description: '1 gallon whole milk' },
-    { id: '8901234567892', name: 'Bread', category: 'Bakery', price: 2.50, stockQuantity: 50, description: 'Whole wheat bread' },
-    { id: '8901234567893', name: 'Chicken', category: 'Meat', price: 7.99, stockQuantity: 30, description: 'Boneless chicken breast' },
-    { id: '8901234567894', name: 'Rice', category: 'Grains', price: 4.99, stockQuantity: 100, description: 'Basmati rice 2kg' }
-  ];
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   // Load items on component mount
   useEffect(() => {
-    // In future, this would be an API call
-    // const fetchItems = async () => {
-    //   try {
-    //     const response = await itemsService.getItems();
-    //     setItems(response.data);
-    //   } catch (error) {
-    //     console.error('Error fetching items:', error);
-    //   }
-    // };
-    // fetchItems();
+    const fetchItems = async () => {
+      try {
+        setLoading(true);
+        const response = await itemsService.getItems();
+        setItems(response.data.items || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching items:', err);
+        setError('Failed to load items. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    setItems(mockItems);
+    fetchItems();
   }, []);
   
   // Function to handle view changes
@@ -47,53 +44,38 @@ const ItemsPage = () => {
       setSelectedItemId(itemId);
     }
   };
-  
+
   // Handle item operations
-  const handleAddItem = (newItem) => {
-    // In future, this would be an API call
-    // const addItem = async (item) => {
-    //   try {
-    //     const response = await itemsService.createItem(item);
-    //     setItems([...items, response.data]);
-    //   } catch (error) {
-    //     console.error('Error adding item:', error);
-    //   }
-    // };
-    // addItem(newItem);
-    
-    setItems([...items, newItem]);
-    handleViewChange('list');
+  const handleAddItem = async (newItem) => {
+    try {
+      const response = await itemsService.createItem(newItem);
+      setItems([...items, response.data]);
+      handleViewChange('list');
+    } catch (err) {
+      console.error('Error adding item:', err);
+      alert('Failed to add item. Please try again.');
+    }
   };
-  
-  const handleUpdateItem = (updatedItem) => {
-    // In future, this would be an API call
-    // const updateItem = async (item) => {
-    //   try {
-    //     await itemsService.updateItem(item.id, item);
-    //     setItems(items.map(i => i.id === item.id ? item : i));
-    //   } catch (error) {
-    //     console.error('Error updating item:', error);
-    //   }
-    // };
-    // updateItem(updatedItem);
-    
-    setItems(items.map(item => item.id === updatedItem.id ? updatedItem : item));
-    handleViewChange('list');
+
+  const handleUpdateItem = async (updatedItem) => {
+    try {
+      await itemsService.updateItem(updatedItem.id, updatedItem);
+      setItems(items.map(item => item.id === updatedItem.id ? updatedItem : item));
+      handleViewChange('list');
+    } catch (err) {
+      console.error('Error updating item:', err);
+      alert('Failed to update item. Please try again.');
+    }
   };
-  
-  const handleDeleteItem = (itemId) => {
-    // In future, this would be an API call
-    // const deleteItem = async (id) => {
-    //   try {
-    //     await itemsService.deleteItem(id);
-    //     setItems(items.filter(item => item.id !== id));
-    //   } catch (error) {
-    //     console.error('Error deleting item:', error);
-    //   }
-    // };
-    // deleteItem(itemId);
-    
-    setItems(items.filter(item => item.id !== itemId));
+
+  const handleDeleteItem = async (itemId) => {
+    try {
+      await itemsService.deleteItem(itemId);
+      setItems(items.filter(item => item.id !== itemId));
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      alert('Failed to delete item. Please try again.');
+    }
   };
   
   // Render the appropriate component based on the view
@@ -118,11 +100,14 @@ const ItemsPage = () => {
                />;
       case 'list':
       default:
-        return <ItemsList 
-                 onViewDetail={(itemId) => handleViewChange('detail', itemId)}
-                 onAddNew={() => handleViewChange('add')}
-                 onEditItem={(itemId) => handleViewChange('edit', itemId)}
-                 onDeleteItem={handleDeleteItem}
+        return <ItemsList
+          items={items}
+          loading={loading}
+          error={error}
+          onViewDetail={(itemId) => handleViewChange('detail', itemId)}
+          onAddNew={() => handleViewChange('add')}
+          onEditItem={(itemId) => handleViewChange('edit', itemId)}
+          onDeleteItem={handleDeleteItem}
                />;
     }
   };

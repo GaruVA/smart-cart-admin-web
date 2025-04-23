@@ -1,17 +1,6 @@
 // src/components/items/ItemForm.jsx
 import React, { useState, useEffect } from 'react';
-
-// Temporary mock data lookup function
-const getMockItem = (id) => {
-  const mockItems = [
-    { id: '8901234567890', name: 'Apple', category: 'Fruits', price: 2.99, stockQuantity: 150, description: 'Fresh red apples' },
-    { id: '8901234567891', name: 'Milk', category: 'Dairy', price: 3.49, stockQuantity: 75, description: '1 gallon whole milk' },
-    { id: '8901234567892', name: 'Bread', category: 'Bakery', price: 2.50, stockQuantity: 50, description: 'Whole wheat bread' },
-    { id: '8901234567893', name: 'Chicken', category: 'Meat', price: 7.99, stockQuantity: 30, description: 'Boneless chicken breast' },
-    { id: '8901234567894', name: 'Rice', category: 'Grains', price: 4.99, stockQuantity: 100, description: 'Basmati rice 2kg' }
-  ];
-  return mockItems.find(item => item.id === id);
-};
+import itemsService from '../../services/itemsService';
 
 const ItemForm = ({ itemId, onSave, onCancel }) => {
   // Initial empty form state
@@ -27,17 +16,33 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(!!itemId);
+  const [loading, setLoading] = useState(false);
   
   // Load item data if editing
   useEffect(() => {
     if (itemId) {
-      // In future this would be an API call
-      const itemToEdit = getMockItem(itemId);
-      if (itemToEdit) {
-        setFormData(itemToEdit);
-      }
+      const fetchItem = async () => {
+        try {
+          setLoading(true);
+          const response = await itemsService.getItem(itemId);
+          setFormData({
+            ...response.data,
+            // Convert to strings for form inputs
+            price: response.data.price.toString(),
+            stockQuantity: response.data.stockQuantity.toString()
+          });
+        } catch (err) {
+          console.error('Error fetching item for edit:', err);
+          alert('Failed to load item data. Please try again.');
+          onCancel();
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchItem();
     }
-  }, [itemId]);
+  }, [itemId, onCancel]);
   
   // Handle input changes
   const handleChange = (e) => {
@@ -90,16 +95,33 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
   
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      // In future this would be an API call
-      console.log('Saving item:', formData);
-      onSave(formData);
+ // Handle form submission
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (validateForm()) {
+    try {
+      setLoading(true);
+      
+      // Convert string values to numbers
+      const itemData = {
+        ...formData,
+        price: parseFloat(formData.price),
+        stockQuantity: parseInt(formData.stockQuantity)
+      };
+      
+      await onSave(itemData);
+    } catch (err) {
+      console.error('Error saving item:', err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
+};
+
+if (loading && isEditing) {
+  return <div className="loading">Loading...</div>;
+}
   
   return (
     <div className="item-form">
