@@ -48,6 +48,7 @@ app.get('/', (req, res) => {
 if (firebaseInitialized) {
   // Routes
   app.use('/api/v1/analytics', require('./routes/analytics'));
+  app.use('/api/items', require('./routes/items'));
 } else {
   // Fallback routes for when Firebase is not initialized
   app.get('/api/*', (req, res) => {
