@@ -1,24 +1,25 @@
 import axios from 'axios';
-import { auth } from './firebase';
+import { getAuth } from 'firebase/auth';
 
-// Create axios instance with base URL for API requests
+// Create axios instance
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' 
-    ? '/api/v1' // In production, use relative path
-    : 'http://localhost:5000/api/v1' // In development, use backend server URL
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api'
 });
 
-// Add an interceptor to attach Firebase auth token to each request
+// Add request interceptor to inject auth token
 api.interceptors.request.use(async (config) => {
   try {
+    const auth = getAuth();
     const user = auth.currentUser;
+    
     if (user) {
       const token = await user.getIdToken();
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   } catch (error) {
-    console.error('Error getting auth token:', error);
+    console.error('Error setting auth token:', error);
     return config;
   }
 }, (error) => {
