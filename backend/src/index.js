@@ -1,9 +1,11 @@
+// src/index.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
+const cartRoutes = require('./routes/cartRoutes'); // Import cart routes
 
 // Load environment variables
 dotenv.config();
@@ -22,7 +24,6 @@ let firebaseInitialized = false;
 try {
   const serviceAccountPath = path.join(__dirname, '../config/serviceAccountKey.json');
   
-  // Check if the service account file exists and is accessible
   if (fs.existsSync(serviceAccountPath)) {
     const serviceAccount = require(serviceAccountPath);
     admin.initializeApp({
@@ -46,9 +47,8 @@ app.get('/', (req, res) => {
 
 // Only set up routes if Firebase is initialized
 if (firebaseInitialized) {
-  // Routes
-  app.use('/api/analytics', require('./routes/analytics'));
-  app.use('/api/items', require('./routes/items'));
+  // Use cart routes
+  app.use('/api/cart', cartRoutes);
 } else {
   // Fallback routes for when Firebase is not initialized
   app.get('/api/*', (req, res) => {
