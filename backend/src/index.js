@@ -8,7 +8,7 @@ const path = require('path');
 const cartRoutes = require('./routes/cartRoutes'); // Import cart routes
 
 // Load environment variables
-dotenv.config();
+dotenv.config(); 
 
 // Initialize Express
 const app = express();
