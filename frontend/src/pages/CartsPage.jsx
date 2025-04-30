@@ -46,8 +46,8 @@ const CartsPage = () => {
 
   const handleUpdateCart = async (updatedCart) => {
     try {
-      await cartsService.updateCart(updatedCart.cartId, updatedCart);
-      setCarts(carts.map(c => c.cartId === updatedCart.cartId ? updatedCart : c));
+      const response = await cartsService.updateCart(updatedCart.cartId, updatedCart);
+      setCarts(carts.map(c => c.cartId === updatedCart.cartId ? response.data : c));
       handleViewChange('list');
     } catch (error) {
       console.error('Failed to update cart:', error);

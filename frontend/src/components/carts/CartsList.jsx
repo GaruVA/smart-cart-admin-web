@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-// Mock data for carts
-const mockCarts = [
-  { cartId: '1', status: 'online', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-19T08:45:00Z' },
-  { cartId: '2', status: 'offline', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-18T16:22:00Z' },
-  { cartId: '3', status: 'maintenance', createdAt: '2025-02-20T00:00:00Z', updatedAt: '2025-04-17T11:30:00Z' }
-];
-
-const CartsList = ({ onViewDetail, onAddNew, onEditCart, onDeleteCart }) => {
+const CartsList = ({ carts: initialCarts, onViewDetail, onAddNew, onEditCart, onDeleteCart }) => {
   const [carts, setCarts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'cartId', direction: 'ascending' });
 
   useEffect(() => {
-    setCarts(mockCarts);
-    setFiltered(mockCarts);
-  }, []);
+    setCarts(initialCarts);
+    setFiltered(initialCarts);
+  }, [initialCarts]);
 
   useEffect(() => {
     let results = statusFilter ? carts.filter(c => c.status === statusFilter) : carts;
@@ -26,7 +19,15 @@ const CartsList = ({ onViewDetail, onAddNew, onEditCart, onDeleteCart }) => {
 
   const clearFilter = () => setStatusFilter('');
 
-  const formatDate = dateStr => new Date(dateStr).toLocaleString();
+  const formatDate = date => {
+    if (!date) return '';
+    // Handle Firestore Timestamp
+    if (date.toDate && typeof date.toDate === 'function') {
+      return date.toDate().toLocaleString();
+    }
+    // Fallback for ISO string or number
+    return new Date(date).toLocaleString();
+  };
 
   // Sorting handlers
   const requestSort = key => {
