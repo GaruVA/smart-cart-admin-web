@@ -1,5 +1,4 @@
 // src/controllers/cartController.js
-const Cart = require('../models/cartModel');
 const admin = require('firebase-admin');
 
 // Create a new cart with auto-generated ID
@@ -82,8 +81,18 @@ const getCart = async (req, res) => {
 const removeItemFromCart = async (req, res) => {
   try {
     const { cartId, itemId } = req.params;
-    const cart = new Cart(cartId);
-    await cart.removeItemFromCart(itemId);
+    const cartRef = admin.firestore().collection('carts').doc(cartId);
+    const doc = await cartRef.get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    const data = doc.data();
+    const items = Array.isArray(data.items) ? data.items : [];
+    const updatedItems = items.filter(item => item.id !== itemId);
+    await cartRef.update({
+      items: updatedItems,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
     res.status(200).json({ message: 'Item removed from cart' });
   } catch (error) {
     console.error('Error removing item from cart:', error);
