@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-
-// Mock data lookup function
-const getMockCart = (id) => {
-  const mockCarts = [
-    { cartId: '1', status: 'online', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-19T08:45:00Z' },
-    { cartId: '2', status: 'offline', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-18T16:22:00Z' },
-    { cartId: '3', status: 'maintenance', createdAt: '2025-02-20T00:00:00Z', updatedAt: '2025-04-17T11:30:00Z' }
-  ];
-  return mockCarts.find(c => c.cartId === id);
-};
+import cartsService from '../../services/cartsService';
 
 const CartDetail = ({ cartId, onBack, onEdit }) => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetched = getMockCart(cartId);
-    setCart(fetched);
-    setLoading(false);
+    const fetchCart = async () => {
+      setLoading(true);
+      try {
+        const response = await cartsService.getCart(cartId);
+        setCart(response.data);
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCart();
   }, [cartId]);
 
   if (loading) return <div className="loading">Loading...</div>;

@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setError('');
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setCurrentUser(userCredential.user); // (✅ optional but safe)
       return userCredential.user;
     } catch (error) {
       setError('Failed to sign in: ' + error.message);
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setError('');
       await signOut(auth);
+      setCurrentUser(null); // (✅ optional but safe)
     } catch (error) {
       setError('Failed to sign out: ' + error.message);
       throw error;

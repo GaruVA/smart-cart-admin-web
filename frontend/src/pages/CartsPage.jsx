@@ -10,16 +10,22 @@ const CartsPage = () => {
   const [view, setView] = useState('list');
   const [selectedCartId, setSelectedCartId] = useState(null);
   const [carts, setCarts] = useState([]);
-
-  // Mock data for initial development
-  const mockCarts = [
-    { cartId: '1', status: 'online', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-19T08:45:00Z' },
-    { cartId: '2', status: 'offline', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-18T16:22:00Z' },
-    { cartId: '3', status: 'maintenance', createdAt: '2025-02-20T00:00:00Z', updatedAt: '2025-04-17T11:30:00Z' }
-  ];
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setCarts(mockCarts);
+    const fetchCarts = async () => {
+      try {
+        const response = await cartsService.getCarts();
+        setCarts(response.data); // Assuming backend sends { data: [...] }
+      } catch (error) {
+        console.error('Failed to fetch carts:', error);
+        alert('Error loading carts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCarts();
   }, []);
 
   const handleViewChange = (newView, cartId = null) => {
@@ -27,14 +33,26 @@ const CartsPage = () => {
     if (cartId !== null) setSelectedCartId(cartId);
   };
 
-  const handleAddCart = (newCart) => {
-    setCarts([...carts, newCart]);
-    handleViewChange('list');
+  const handleAddCart = async (newCart) => {
+    try {
+      const response = await cartsService.createCart(newCart);
+      setCarts([...carts, response.data]);
+      handleViewChange('list');
+    } catch (error) {
+      console.error('Failed to add cart:', error);
+      alert('Error adding cart. Please try again.');
+    }
   };
 
-  const handleUpdateCart = (updatedCart) => {
-    setCarts(carts.map(c => c.cartId === updatedCart.cartId ? updatedCart : c));
-    handleViewChange('list');
+  const handleUpdateCart = async (updatedCart) => {
+    try {
+      const response = await cartsService.updateCart(updatedCart.cartId, updatedCart);
+      setCarts(carts.map(c => c.cartId === updatedCart.cartId ? response.data : c));
+      handleViewChange('list');
+    } catch (error) {
+      console.error('Failed to update cart:', error);
+      alert('Error updating cart. Please try again.');
+    }
   };
 
   const handleDeleteCart = async (cartId) => {
@@ -42,8 +60,8 @@ const CartsPage = () => {
     try {
       await cartsService.deleteCart(cartId);
       setCarts(prev => prev.filter(c => c.cartId !== cartId));
-    } catch (err) {
-      console.error('Failed to delete cart:', err);
+    } catch (error) {
+      console.error('Failed to delete cart:', error);
       alert('Error deleting cart. Please try again.');
     }
   };
@@ -51,30 +69,39 @@ const CartsPage = () => {
   const renderView = () => {
     switch (view) {
       case 'detail':
-        return <CartDetail 
-                 cartId={selectedCartId} 
-                 onBack={() => handleViewChange('list')} 
-                 onEdit={() => handleViewChange('edit', selectedCartId)}
-               />;
+        return (
+          <CartDetail 
+            cartId={selectedCartId} 
+            onBack={() => handleViewChange('list')} 
+            onEdit={() => handleViewChange('edit', selectedCartId)}
+          />
+        );
       case 'add':
-        return <CartForm 
-                 onSave={handleAddCart} 
-                 onCancel={() => handleViewChange('list')} 
-               />;
+        return (
+          <CartForm 
+            onSave={handleAddCart} 
+            onCancel={() => handleViewChange('list')} 
+          />
+        );
       case 'edit':
-        return <CartForm 
-                 cartId={selectedCartId}
-                 onSave={handleUpdateCart} 
-                 onCancel={() => handleViewChange('list')} 
-               />;
+        return (
+          <CartForm 
+            cartId={selectedCartId}
+            onSave={handleUpdateCart} 
+            onCancel={() => handleViewChange('list')} 
+          />
+        );
       case 'list':
       default:
-        return <CartsList 
-                 onViewDetail={(id) => handleViewChange('detail', id)}
-                 onAddNew={() => handleViewChange('add')}
-                 onEditCart={(id) => handleViewChange('edit', id)}
-                 onDeleteCart={handleDeleteCart}
-               />;
+        return (
+          <CartsList 
+            carts={carts} // <-- Pass the carts here
+            onViewDetail={(id) => handleViewChange('detail', id)}
+            onAddNew={() => handleViewChange('add')}
+            onEditCart={(id) => handleViewChange('edit', id)}
+            onDeleteCart={handleDeleteCart}
+          />
+        );
     }
   };
 
@@ -87,7 +114,12 @@ const CartsPage = () => {
             <i className="fas fa-plus"></i> Add New Cart
           </button>
         </div>
-        {renderView()}
+
+        {loading ? (
+          <div>Loading carts...</div>
+        ) : (
+          renderView()
+        )}
       </div>
     </AdminLayout>
   );

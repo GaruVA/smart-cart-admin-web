@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
-
-// Mock data lookup for carts
-const getMockCart = (id) => {
-  const mockCarts = [
-    { cartId: '1', status: 'online', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-19T08:45:00Z' },
-    { cartId: '2', status: 'offline', createdAt: '2025-01-15T00:00:00Z', updatedAt: '2025-04-18T16:22:00Z' },
-    { cartId: '3', status: 'maintenance', createdAt: '2025-02-20T00:00:00Z', updatedAt: '2025-04-17T11:30:00Z' }
-  ];
-  return mockCarts.find(c => c.cartId === id);
-};
+import cartsService from '../../services/cartsService';
 
 const CartForm = ({ cartId, onSave, onCancel }) => {
-  const initialState = { cartId: '', status: '' };
+  const initialState = { status: '' };
   const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const isEditing = !!cartId;
 
   useEffect(() => {
     if (isEditing) {
-      const cart = getMockCart(cartId);
-      if (cart) setFormData({ cartId: cart.cartId, status: cart.status });
+      (async () => {
+        try {
+          const response = await cartsService.getCart(cartId);
+          setFormData({ status: response.data.status });
+        } catch (error) {
+          console.error('Error fetching cart for edit:', error);
+        }
+      })();
     }
-  }, [cartId]);
+  }, [cartId, isEditing]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +28,6 @@ const CartForm = ({ cartId, onSave, onCancel }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.cartId.trim()) newErrors.cartId = 'Cart ID is required';
     if (!formData.status) newErrors.status = 'Status is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -39,26 +35,19 @@ const CartForm = ({ cartId, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) onSave(formData);
+    if (validate()) {
+      if (isEditing) {
+        onSave({ cartId, status: formData.status });
+      } else {
+        onSave({ status: formData.status });
+      }
+    }
   };
 
   return (
     <div className="cart-form">
       <h2>{isEditing ? 'Edit Cart' : 'Add New Cart'}</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="cartId">Cart ID</label>
-          <input
-            type="text"
-            id="cartId"
-            name="cartId"
-            value={formData.cartId}
-            onChange={handleChange}
-            className={`form-control ${errors.cartId ? 'is-invalid' : ''}`}
-            disabled={isEditing}
-          />
-          {errors.cartId && <div className="invalid-feedback">{errors.cartId}</div>}
-        </div>
         <div className="form-group">
           <label htmlFor="status">Status</label>
           <select
