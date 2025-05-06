@@ -1,27 +1,54 @@
-const { getFirestore, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } = require('firebase-admin/firestore'); // Removed 'collection' from here
+const admin = require('firebase-admin'); // Required for Timestamp and FieldValue
+const { getFirestore } = require('firebase-admin/firestore');
 const db = getFirestore();
-const sessionsCollection = db.collection('sessions'); // Changed this line
+const sessionsCollection = db.collection('sessions');
+
+// Helper function to map session data and convert timestamps
+const mapSessionDataWithId = (doc) => {
+  const data = doc.data();
+  const result = { id: doc.id, ...data };
+
+  // Ensure sessionId is present and matches id
+  if (!result.sessionId || result.sessionId !== doc.id) {
+    result.sessionId = doc.id;
+  }
+
+  if (result.startedAt && typeof result.startedAt.toDate === 'function') {
+    result.startedAt = result.startedAt.toDate().toISOString();
+  }
+  if (result.endedAt && typeof result.endedAt.toDate === 'function') {
+    result.endedAt = result.endedAt.toDate().toISOString();
+  }
+  return result;
+};
 
 // Get all sessions with optional pagination and status filtering
 exports.getSessions = async (req, res) => {
   try {
-    const { page = 1, limit = 20, status } = req.query;
-    const snapshot = await getDocs(sessionsCollection);
-    let sessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const { page = 1, limit = 20, status: statusFilter } = req.query;
+    let query = sessionsCollection;
 
-    if (status) {
-      sessions = sessions.filter(session => session.status === status);
+    if (statusFilter) {
+      query = query.where('status', '==', statusFilter);
     }
 
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + parseInt(limit);
+    // Firestore pagination is typically done with startAfter/endBefore,
+    // but for simplicity, matching original logic of in-memory pagination after full fetch.
+    // Consider server-side cursor-based pagination for large datasets.
+    const snapshot = await query.get();
+    let allSessions = snapshot.docs.map(doc => mapSessionDataWithId(doc));
+
+    const startIndex = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const endIndex = startIndex + parseInt(limit, 10);
+    const paginatedSessions = allSessions.slice(startIndex, endIndex);
 
     res.json({
-      total: sessions.length,
-      sessions: sessions.slice(startIndex, endIndex),
+      total: allSessions.length,
+      sessions: paginatedSessions,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching sessions', error });
+    console.error('Error in getSessions:', error);
+    res.status(500).json({ message: 'Error fetching sessions', error: error.message });
   }
 };
 
@@ -29,27 +56,53 @@ exports.getSessions = async (req, res) => {
 exports.getSession = async (req, res) => {
   try {
     const { id } = req.params;
-    const sessionDoc = doc(sessionsCollection, id);
-    const session = await getDoc(sessionDoc);
+    const sessionDocRef = sessionsCollection.doc(id);
+    const session = await sessionDocRef.get();
 
     if (!session.exists) {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    res.json({ id: session.id, ...session.data() });
+    res.json(mapSessionDataWithId(session));
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching session', error });
+    console.error('Error in getSession:', error);
+    res.status(500).json({ message: 'Error fetching session', error: error.message });
   }
 };
 
 // Create a new session
 exports.createSession = async (req, res) => {
   try {
-    const newSession = req.body;
-    const docRef = await addDoc(sessionsCollection, newSession);
-    res.status(201).json({ id: docRef.id, ...newSession });
+    const sessionData = req.body;
+    const sessionRef = sessionsCollection.doc(); // Auto-generate ID
+
+    const newSessionObject = {
+      ...sessionData,
+      sessionId: sessionRef.id, // Ensure sessionId is the document ID
+    };
+
+    // Convert date strings from req.body to Timestamps before saving
+    if (sessionData.startedAt && typeof sessionData.startedAt === 'string') {
+      newSessionObject.startedAt = admin.firestore.Timestamp.fromDate(new Date(sessionData.startedAt));
+    } else if (!sessionData.startedAt) {
+      newSessionObject.startedAt = admin.firestore.FieldValue.serverTimestamp(); // Default if not provided
+    }
+
+    if (sessionData.endedAt && typeof sessionData.endedAt === 'string') {
+      newSessionObject.endedAt = admin.firestore.Timestamp.fromDate(new Date(sessionData.endedAt));
+    } else if (sessionData.hasOwnProperty('endedAt') && sessionData.endedAt === null) {
+      newSessionObject.endedAt = null;
+    } else if (!sessionData.hasOwnProperty('endedAt')) {
+      newSessionObject.endedAt = null; // Default to null if not specified
+    }
+
+
+    await sessionRef.set(newSessionObject);
+    const createdDoc = await sessionRef.get();
+    res.status(201).json(mapSessionDataWithId(createdDoc));
   } catch (error) {
-    res.status(500).json({ message: 'Error creating session', error });
+    console.error('Error in createSession:', error);
+    res.status(500).json({ message: 'Error creating session', error: error.message });
   }
 };
 
@@ -57,17 +110,34 @@ exports.createSession = async (req, res) => {
 exports.updateSession = async (req, res) => {
   try {
     const { id } = req.params;
-    const sessionDoc = doc(sessionsCollection, id);
-    const session = await getDoc(sessionDoc);
+    const sessionDocRef = sessionsCollection.doc(id);
+    const sessionSnapshot = await sessionDocRef.get();
 
-    if (!session.exists) {
+    if (!sessionSnapshot.exists) {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    await updateDoc(sessionDoc, req.body);
-    res.json({ id, ...req.body });
+    const sessionDataToUpdate = { ...req.body };
+
+    // Convert date strings from req.body to Timestamps before saving
+    if (sessionDataToUpdate.startedAt && typeof sessionDataToUpdate.startedAt === 'string') {
+      sessionDataToUpdate.startedAt = admin.firestore.Timestamp.fromDate(new Date(sessionDataToUpdate.startedAt));
+    }
+    
+    if (sessionDataToUpdate.hasOwnProperty('endedAt')) {
+      if (sessionDataToUpdate.endedAt === null) {
+        sessionDataToUpdate.endedAt = null;
+      } else if (typeof sessionDataToUpdate.endedAt === 'string') {
+        sessionDataToUpdate.endedAt = admin.firestore.Timestamp.fromDate(new Date(sessionDataToUpdate.endedAt));
+      }
+    }
+
+    await sessionDocRef.update(sessionDataToUpdate);
+    const updatedSessionDoc = await sessionDocRef.get();
+    res.json(mapSessionDataWithId(updatedSessionDoc));
   } catch (error) {
-    res.status(500).json({ message: 'Error updating session', error });
+    console.error('Error in updateSession:', error);
+    res.status(500).json({ message: 'Error updating session', error: error.message });
   }
 };
 
@@ -75,16 +145,17 @@ exports.updateSession = async (req, res) => {
 exports.deleteSession = async (req, res) => {
   try {
     const { id } = req.params;
-    const sessionDoc = doc(sessionsCollection, id);
-    const session = await getDoc(sessionDoc);
+    const sessionDocRef = sessionsCollection.doc(id);
+    const session = await sessionDocRef.get();
 
     if (!session.exists) {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    await deleteDoc(sessionDoc);
+    await sessionDocRef.delete();
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting session', error });
+    console.error('Error in deleteSession:', error);
+    res.status(500).json({ message: 'Error deleting session', error: error.message });
   }
 };

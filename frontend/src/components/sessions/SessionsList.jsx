@@ -17,7 +17,17 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
 
   const clearFilter = () => setStatusFilter('');
 
-  const formatDate = dt => dt ? new Date(dt).toLocaleString() : 'N/A';
+  const formatDate = date => {
+    if (!date) return 'N/A';
+    // Handle Firestore Timestamp (defensive, less likely needed if backend sends ISO)
+    if (date.toDate && typeof date.toDate === 'function') {
+      const dObj = date.toDate();
+      return !isNaN(dObj.getTime()) ? dObj.toLocaleString() : 'Invalid Date';
+    }
+    // Handle ISO string or number
+    const d = new Date(date);
+    return !isNaN(d.getTime()) ? d.toLocaleString() : 'Invalid Date';
+  };
 
   // Sorting handlers
   const requestSort = key => {
@@ -86,7 +96,12 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
               <td>{s.status}</td>
               <td>{formatDate(s.startedAt)}</td>
               <td>{formatDate(s.endedAt)}</td>
-              <td>${s.totalCost.toFixed(2)}</td>
+              {/* Add a check for totalCost before calling toFixed */}
+              <td>
+                {typeof s.totalCost === 'number'
+                  ? `$${s.totalCost.toFixed(2)}`
+                  : 'N/A'}
+              </td>
               <td className="action-buttons">
                 <button onClick={() => onViewDetail(s.sessionId)} className="btn btn-sm btn-info">View</button>
                 <button onClick={() => onEditSession(s.sessionId, { name: 'Updated Name' })} className="btn btn-sm btn-warning">Edit</button>
