@@ -1,4 +1,8 @@
-import api from './api';
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api', // Update this to match your backend's base URL
+});
 
 // API service for sessions
 const sessionsService = {
