@@ -1,6 +1,6 @@
-const { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } = require('firebase-admin/firestore');
+const { getFirestore, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } = require('firebase-admin/firestore'); // Removed 'collection' from here
 const db = getFirestore();
-const sessionsCollection = collection(db, 'sessions');
+const sessionsCollection = db.collection('sessions'); // Changed this line
 
 // Get all sessions with optional pagination and status filtering
 exports.getSessions = async (req, res) => {
