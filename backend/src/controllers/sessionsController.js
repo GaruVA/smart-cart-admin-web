@@ -69,7 +69,46 @@ exports.getSession = async (req, res) => {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    res.json(mapSessionDataWithId(session));
+    const sessionData = mapSessionDataWithId(session);
+
+    // Fetch item details from the items collection
+    if (sessionData.items && sessionData.items.length > 0) {
+      const itemPromises = sessionData.items.map(async (item) => {
+        try {
+          const itemDoc = await db.collection('items').doc(item.itemId).get(); // Use itemId as the document ID
+          if (itemDoc.exists) {
+            const itemData = itemDoc.data();
+            return {
+              barcode: item.itemId, // Treat itemId as the barcode
+              name: itemData.name || 'N/A', // Fetch the item name
+              quantity: item.quantity || 0,
+              unitPrice: itemData.unitPrice || 0.0, // Fetch the unit price
+              totalPrice: ((item.quantity || 0) * (itemData.unitPrice || 0.0)).toFixed(2), // Calculate total price
+            };
+          }
+          return {
+            barcode: item.itemId, // Treat itemId as the barcode
+            name: 'N/A',
+            quantity: item.quantity || 0,
+            unitPrice: 0.0,
+            totalPrice: 0.0,
+          };
+        } catch (error) {
+          console.error(`Error fetching item with ID ${item.itemId}:`, error);
+          return {
+            barcode: item.itemId, // Treat itemId as the barcode
+            name: 'Error',
+            quantity: item.quantity || 0,
+            unitPrice: 0.0,
+            totalPrice: 0.0,
+          };
+        }
+      });
+
+      sessionData.items = await Promise.all(itemPromises);
+    }
+
+    res.json(sessionData);
   } catch (error) {
     console.error('Error in getSession:', error);
     res.status(500).json({ message: 'Error fetching session', error: error.message });

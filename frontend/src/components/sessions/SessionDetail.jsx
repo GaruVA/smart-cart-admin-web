@@ -117,11 +117,11 @@ const SessionDetail = ({ sessionId, onBack, onEdit }) => {
             <tbody>
               {session.items.map((item, index) => (
                 <tr key={index}>
-                  <td>{item.barcode || 'N/A'}</td>
-                  <td>{item.name || 'N/A'}</td>
+                  <td>{item.barcode || 'N/A'}</td> {/* Display itemId as barcode */}
+                  <td>{item.name || 'N/A'}</td> {/* Display the item name */}
                   <td>{item.quantity}</td>
-                  <td>${item.unitPrice.toFixed(2)}</td>
-                  <td>${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                  <td>${parseFloat(item.unitPrice).toFixed(2)}</td> {/* Display unit price */}
+                  <td>${parseFloat(item.totalPrice).toFixed(2)}</td> {/* Display total price */}
                 </tr>
               ))}
             </tbody>
