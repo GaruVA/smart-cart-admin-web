@@ -102,6 +102,33 @@ const SessionDetail = ({ sessionId, onBack, onEdit }) => {
             </span>
           </div>
         </div>
+        <h3>Item List</h3>
+        {session.items && session.items.length > 0 ? (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Barcode</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {session.items.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.barcode || 'N/A'}</td>
+                  <td>{item.name || 'N/A'}</td>
+                  <td>{item.quantity}</td>
+                  <td>${item.unitPrice.toFixed(2)}</td>
+                  <td>${(item.quantity * item.unitPrice).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p>No items in this session.</p>
+        )}
       </div>
     </div>
   );

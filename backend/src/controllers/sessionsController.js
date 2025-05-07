@@ -19,6 +19,12 @@ const mapSessionDataWithId = (doc) => {
   if (result.endedAt && typeof result.endedAt.toDate === 'function') {
     result.endedAt = result.endedAt.toDate().toISOString();
   }
+
+  // Ensure items array is present
+  if (!result.items) {
+    result.items = [];
+  }
+
   return result;
 };
 
