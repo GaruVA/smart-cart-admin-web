@@ -82,8 +82,8 @@ exports.getSession = async (req, res) => {
               barcode: item.itemId, // Treat itemId as the barcode
               name: itemData.name || 'N/A', // Fetch the item name
               quantity: item.quantity || 0,
-              unitPrice: itemData.unitPrice || 0.0, // Fetch the unit price
-              totalPrice: ((item.quantity || 0) * (itemData.unitPrice || 0.0)).toFixed(2), // Calculate total price
+              unitPrice: item.unitPrice || 0.0, // Fetch the unit price
+              totalPrice: ((item.quantity || 0) * (item.unitPrice || 0.0)).toFixed(2), // Calculate total price
             };
           }
           return {
