@@ -1,22 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-// Mock data for sessions
-const mockSessions = [
-  { sessionId: 's1', cartId: '1', status: 'active', startedAt: '2025-04-19T09:30:00Z', endedAt: null, totalCost: 7.47 },
-  { sessionId: 's2', cartId: '2', status: 'completed', startedAt: '2025-04-18T15:15:00Z', endedAt: '2025-04-18T15:40:00Z', totalCost: 18.46 },
-  { sessionId: 's3', cartId: '3', status: 'abandoned', startedAt: '2025-04-18T11:20:00Z', endedAt: null, totalCost: 5.98 }
-];
-
-const SessionsList = ({ onViewDetail }) => {
-  const [sessions, setSessions] = useState([]);
+const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession, onDeleteSession }) => {
   const [filtered, setFiltered] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'sessionId', direction: 'ascending' });
 
   useEffect(() => {
-    setSessions(mockSessions);
-    setFiltered(mockSessions);
-  }, []);
+    setFiltered(sessions);
+  }, [sessions]);
 
   useEffect(() => {
     let results = statusFilter ? sessions.filter(s => s.status === statusFilter) : sessions;
@@ -26,7 +17,17 @@ const SessionsList = ({ onViewDetail }) => {
 
   const clearFilter = () => setStatusFilter('');
 
-  const formatDate = dt => dt ? new Date(dt).toLocaleString() : 'N/A';
+  const formatDate = date => {
+    if (!date) return 'N/A';
+    // Handle Firestore Timestamp (defensive, less likely needed if backend sends ISO)
+    if (date.toDate && typeof date.toDate === 'function') {
+      const dObj = date.toDate();
+      return !isNaN(dObj.getTime()) ? dObj.toLocaleString() : 'Invalid Date';
+    }
+    // Handle ISO string or number
+    const d = new Date(date);
+    return !isNaN(d.getTime()) ? d.toLocaleString() : 'Invalid Date';
+  };
 
   // Sorting handlers
   const requestSort = key => {
@@ -47,6 +48,8 @@ const SessionsList = ({ onViewDetail }) => {
     });
   };
 
+  if (loading) return <p>Loading sessions...</p>;
+
   return (
     <div className="sessions-list">
       <div className="sessions-filters">
@@ -57,7 +60,7 @@ const SessionsList = ({ onViewDetail }) => {
           <option value="abandoned">Abandoned</option>
         </select>
         <button onClick={clearFilter} className="btn btn-outline-secondary">Clear Filter</button>
-        {/* No add option for sessions */}
+        <button onClick={() => onAddNew({ name: 'New Session', status: 'active' })} className="btn btn-outline-primary">Add New Session</button>
       </div>
       {/* Carts Table */}
       <div className="sessions-table">
@@ -93,9 +96,16 @@ const SessionsList = ({ onViewDetail }) => {
               <td>{s.status}</td>
               <td>{formatDate(s.startedAt)}</td>
               <td>{formatDate(s.endedAt)}</td>
-              <td>${s.totalCost.toFixed(2)}</td>
+              {/* Add a check for totalCost before calling toFixed */}
+              <td>
+                {typeof s.totalCost === 'number'
+                  ? `$${s.totalCost.toFixed(2)}`
+                  : 'N/A'}
+              </td>
               <td className="action-buttons">
                 <button onClick={() => onViewDetail(s.sessionId)} className="btn btn-sm btn-info">View</button>
+                <button onClick={() => onEditSession(s.sessionId, { name: 'Updated Name' })} className="btn btn-sm btn-warning">Edit</button>
+                <button onClick={() => onDeleteSession(s.sessionId)} className="btn btn-sm btn-danger">Delete</button>
               </td>
             </tr>
           ))}

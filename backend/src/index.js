@@ -49,7 +49,8 @@ if (firebaseInitialized) {
   // Routes
   app.use('/api/analytics', require('./routes/analytics'));
   app.use('/api/items', require('./routes/items'));
-  app.use('/api/carts', require('./routes/carts')); // Added cart routes for cart management
+  app.use('/api/carts', require('./routes/carts'));
+  app.use('/api/sessions', require('./routes/sessions'));
 } else {
   // Fallback routes for when Firebase is not initialized
   app.get('/api/*', (req, res) => {
