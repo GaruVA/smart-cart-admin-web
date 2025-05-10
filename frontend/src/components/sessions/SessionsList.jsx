@@ -60,7 +60,6 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
           <option value="abandoned">Abandoned</option>
         </select>
         <button onClick={clearFilter} className="btn btn-outline-secondary">Clear Filter</button>
-        <button onClick={() => onAddNew({ name: 'New Session', status: 'active' })} className="btn btn-outline-primary">Add New Session</button>
       </div>
       {/* Carts Table */}
       <div className="sessions-table">
@@ -104,7 +103,6 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
               </td>
               <td className="action-buttons">
                 <button onClick={() => onViewDetail(s.sessionId)} className="btn btn-sm btn-info">View</button>
-                <button onClick={() => onEditSession(s.sessionId, { name: 'Updated Name' })} className="btn btn-sm btn-warning">Edit</button>
                 <button onClick={() => onDeleteSession(s.sessionId)} className="btn btn-sm btn-danger">Delete</button>
               </td>
             </tr>
