@@ -115,11 +115,7 @@ const CartsPage = () => {
           </button>
         </div>
 
-        {loading ? (
-          <div>Loading carts...</div>
-        ) : (
-          renderView()
-        )}
+        {renderView()}
       </div>
     </AdminLayout>
   );

@@ -48,8 +48,6 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
     });
   };
 
-  if (loading) return <p>Loading sessions...</p>;
-
   return (
     <div className="sessions-list">
       <div className="sessions-filters">
