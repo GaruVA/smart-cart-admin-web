@@ -214,7 +214,8 @@ const reportService = {
         } else if (!data.lowStockItems || data.lowStockItems.length === 0) {
           // Attempt to fetch the data if it wasn't provided
           try {
-            const lowStockItemsResponse = await analyticsService.getLowStockItems(20);
+            const lowStockItemsResponse = await analyticsService.getLowStockItems(9);
+            console.log('Low stock items response:', lowStockItemsResponse);
             if (lowStockItemsResponse.data && lowStockItemsResponse.data.length > 0) {
               doc.text('Low Stock Items', 14, currentY);
               currentY += 4;

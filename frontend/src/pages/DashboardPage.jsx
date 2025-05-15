@@ -25,7 +25,7 @@ const DashboardPage = () => {
       analyticsService.getDashboardKPIs(),
       analyticsService.getSalesTrend(weekAgoStr, todayStr),
       analyticsService.getCartStatus(),
-      analyticsService.getLowStockItems(20) // Fetch low stock items with threshold of 20
+      analyticsService.getLowStockItems(9) // Fetch low stock items with threshold of 20
     ])
     .then(([kpisRes, salesTrendRes, cartStatusRes, lowStockRes]) => {
       // Set KPIs

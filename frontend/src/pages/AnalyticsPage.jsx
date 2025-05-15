@@ -22,7 +22,7 @@ const TABS = [
 
 const AnalyticsPage = () => {
   const [reportType, setReportType] = useState('sales');
-  const [dateRange, setDateRange] = useState({ from: '2025-04-15', to: '2025-04-22' });
+  const [dateRange, setDateRange] = useState({ from: '2025-04-12', to: '2025-05-15' });
   const [activeTab, setActiveTab] = useState('sales');
   const [analytics, setAnalytics] = useState({ totalSales:0, averageSessionValue:0, conversionRate:0, topSellingCategory:'' });
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ const AnalyticsPage = () => {
       analyticsService.getSalesByCategory(from, to).then(res => setSalesByCategoryData(res.data));
     } else if (activeTab === 'inventory') {
       analyticsService.getInventoryLevels().then(res => setInventoryLevelsData(res.data));
-      analyticsService.getLowStockItems(20).then(res => setLowStockItems(res.data));
+      analyticsService.getLowStockItems(9).then(res => setLowStockItems(res.data));
     } else if (activeTab === 'carts') {
       analyticsService.getCartStatus().then(res => setCartStatusData(res.data));
       analyticsService.getCartUsage(from, to).then(res => setCartUsageData(res.data));
