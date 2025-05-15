@@ -4,6 +4,12 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
   const [filtered, setFiltered] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'sessionId', direction: 'ascending' });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newSession, setNewSession] = useState({
+    status: 'active',
+    cartId: '',
+    items: [{ itemId: '', quantity: 1 }]
+  });
 
   useEffect(() => {
     setFiltered(sessions);
@@ -48,6 +54,31 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
     });
   };
 
+  const handleAddSession = () => {
+    if (onAddNew) onAddNew(newSession);
+    setShowAddModal(false);
+    setNewSession({
+      status: 'active',
+      cartId: '',
+      items: [{ itemId: '', quantity: 1 }]
+    });
+  };
+
+  const handleItemChange = (idx, field, value) => {
+    const updatedItems = [...newSession.items];
+    updatedItems[idx][field] = value;
+    setNewSession({ ...newSession, items: updatedItems });
+  };
+
+  const addItemRow = () => {
+    setNewSession({ ...newSession, items: [...newSession.items, { itemId: '', quantity: 1 }] });
+  };
+
+  const removeItemRow = (idx) => {
+    const updatedItems = newSession.items.filter((_, i) => i !== idx);
+    setNewSession({ ...newSession, items: updatedItems });
+  };
+
   return (
     <div className="sessions-list">
       <div className="sessions-filters">
@@ -58,8 +89,86 @@ const SessionsList = ({ sessions, loading, onViewDetail, onAddNew, onEditSession
           <option value="abandoned">Abandoned</option>
         </select>
         <button onClick={clearFilter} className="btn btn-outline-secondary">Clear Filter</button>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="btn btn-outline-primary"
+          style={{ marginLeft: '8px' }}
+        >
+          Add New Session
+        </button>
       </div>
-      {/* Carts Table */}
+      {showAddModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+        }}>
+          <div style={{ background: '#fff', padding: 24, borderRadius: 8, minWidth: 350 }}>
+            <h3>Add New Session</h3>
+            <div>
+              <label>Status:&nbsp;</label>
+              <select
+                value={newSession.status}
+                onChange={e => setNewSession({ ...newSession, status: e.target.value })}
+              >
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="abandoned">Abandoned</option>
+              </select>
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <label>Cart ID:&nbsp;</label>
+              <input
+                type="text"
+                value={newSession.cartId}
+                onChange={e => setNewSession({ ...newSession, cartId: e.target.value })}
+              />
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <label>Items:</label>
+              <table style={{ width: '100%', marginTop: 4 }}>
+                <thead>
+                  <tr>
+                    <th>Item ID</th>
+                    <th>Quantity</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {newSession.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <input
+                          type="text"
+                          value={item.itemId}
+                          onChange={e => handleItemChange(idx, 'itemId', e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={e => handleItemChange(idx, 'quantity', parseInt(e.target.value, 10) || 1)}
+                        />
+                      </td>
+                      <td>
+                        {newSession.items.length > 1 && (
+                          <button type="button" onClick={() => removeItemRow(idx)}>Remove</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button type="button" onClick={addItemRow} style={{ marginTop: 4 }}>Add Item</button>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <button className="btn btn-success" onClick={handleAddSession}>Add Session</button>
+              <button className="btn btn-secondary" onClick={() => setShowAddModal(false)} style={{ marginLeft: 8 }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="sessions-table">
       <table className="table">
         <thead>
