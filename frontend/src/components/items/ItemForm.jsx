@@ -10,6 +10,7 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
     category: '',
     price: '',
     stockQuantity: '',
+    weight: '',
     description: ''
   };
   
@@ -60,8 +61,7 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
       });
     }
   };
-  
-  // Validate form
+    // Validate form
   const validateForm = () => {
     const newErrors = {};
     
@@ -91,11 +91,14 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
       newErrors.stockQuantity = 'Stock quantity must be a non-negative number';
     }
     
+    if (formData.weight && (isNaN(formData.weight) || parseFloat(formData.weight) <= 0)) {
+      newErrors.weight = 'Weight must be a positive number';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
- // Handle form submission
+  // Handle form submission
  const handleSubmit = async (e) => {
   e.preventDefault();
   
@@ -107,7 +110,8 @@ const ItemForm = ({ itemId, onSave, onCancel }) => {
       const itemData = {
         ...formData,
         price: parseFloat(formData.price),
-        stockQuantity: parseInt(formData.stockQuantity)
+        stockQuantity: parseInt(formData.stockQuantity),
+        weight: formData.weight ? parseInt(formData.weight) : null
       };
       
       await onSave(itemData);
@@ -182,8 +186,7 @@ if (loading && isEditing) {
           />
           {errors.price && <div className="invalid-feedback">{errors.price}</div>}
         </div>
-        
-        <div className="form-group">
+          <div className="form-group">
           <label htmlFor="stockQuantity">Stock Quantity</label>
           <input
             type="number"
@@ -195,6 +198,20 @@ if (loading && isEditing) {
             className={`form-control ${errors.stockQuantity ? 'is-invalid' : ''}`}
           />
           {errors.stockQuantity && <div className="invalid-feedback">{errors.stockQuantity}</div>}
+        </div>
+          <div className="form-group">
+          <label htmlFor="weight">Weight (grams)</label>
+          <input
+            type="number"
+            id="weight"
+            name="weight"
+            value={formData.weight}
+            onChange={handleChange}
+            step="1"
+            min="0"
+            className={`form-control ${errors.weight ? 'is-invalid' : ''}`}
+          />
+          {errors.weight && <div className="invalid-feedback">{errors.weight}</div>}
         </div>
         
         <div className="form-group">

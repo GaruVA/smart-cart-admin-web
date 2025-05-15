@@ -71,7 +71,7 @@ exports.getItem = async (req, res) => {
 // Create a new item
 exports.createItem = async (req, res) => {
   try {
-    const { id, name, category, price, stockQuantity, description } = req.body;
+    const { id, name, category, price, stockQuantity, weight, description } = req.body;
     
     // Validate required fields
     if (!id || !name || !category || price === undefined || stockQuantity === undefined) {
@@ -86,14 +86,14 @@ exports.createItem = async (req, res) => {
     
     // Create timestamp
     const now = admin.firestore.Timestamp.now();
-    
-    // Create new item
+      // Create new item
     const newItem = {
       id,
       name,
       category,
       price: parseFloat(price),
       stockQuantity: parseInt(stockQuantity),
+      weight: weight ? parseInt(weight) : null,
       description: description || '',
       createdAt: now,
       updatedAt: now
@@ -113,20 +113,20 @@ exports.createItem = async (req, res) => {
 exports.updateItem = async (req, res) => {
   try {
     const itemId = req.params.id;
-    const { name, category, price, stockQuantity, description } = req.body;
+    const { name, category, price, stockQuantity, weight, description } = req.body;
     
     // Check if item exists
     const doc = await itemsCollection.doc(itemId).get();
     if (!doc.exists) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    
-    // Build update object with only provided fields
+      // Build update object with only provided fields
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (category !== undefined) updateData.category = category;
     if (price !== undefined) updateData.price = parseFloat(price);
     if (stockQuantity !== undefined) updateData.stockQuantity = parseInt(stockQuantity);
+    if (weight !== undefined) updateData.weight = weight ? parseInt(weight) : null;
     if (description !== undefined) updateData.description = description;
     
     // Always update the timestamp

@@ -119,12 +119,13 @@ const ItemsList = ({ items, loading, error, onViewDetail, onAddNew, onEditItem, 
               </th>
               <th onClick={() => requestSort('category')}>
                 Category {sortConfig.key === 'category' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => requestSort('price')}>
+              </th>              <th onClick={() => requestSort('price')}>
                 Price {sortConfig.key === 'price' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th onClick={() => requestSort('stockQuantity')}>
                 Stock {sortConfig.key === 'stockQuantity' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+              </th>              <th onClick={() => requestSort('weight')}>
+                Weight (g) {sortConfig.key === 'weight' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th>Actions</th>
             </tr>
@@ -135,11 +136,11 @@ const ItemsList = ({ items, loading, error, onViewDetail, onAddNew, onEditItem, 
                 <tr key={item.id}>
                   <td>{item.id}</td>
                   <td>{item.name}</td>
-                  <td>{item.category}</td>
-                  <td>${item.price.toFixed(2)}</td>
+                  <td>{item.category}</td>                  <td>${item.price.toFixed(2)}</td>
                   <td className={item.stockQuantity < 10 ? 'low-stock' : ''}>
                     {item.stockQuantity}
                   </td>
+                  <td>{item.weight ? item.weight : 'N/A'}</td>
                   <td className="action-buttons">
                     <button onClick={() => onViewDetail(item.id)} className="btn btn-sm btn-info">View</button>
                     <button onClick={() => onEditItem(item.id)} className="btn btn-sm btn-warning">Edit</button>

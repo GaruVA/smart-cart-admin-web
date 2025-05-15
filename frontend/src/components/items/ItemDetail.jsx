@@ -90,10 +90,13 @@ const ItemDetail = ({ itemId, onBack, onEdit }) => {
             <span className="detail-label">Price:</span>
             <span className="detail-value">${item.price.toFixed(2)}</span>
           </div>
-          
-          <div className="detail-row">
+            <div className="detail-row">
             <span className="detail-label">Stock Quantity:</span>
             <span className="detail-value">{item.stockQuantity}</span>
+          </div>
+            <div className="detail-row">
+            <span className="detail-label">Weight:</span>
+            <span className="detail-value">{item.weight ? `${item.weight} g` : 'N/A'}</span>
           </div>
           
           <div className="detail-row">
