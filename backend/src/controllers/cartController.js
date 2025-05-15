@@ -137,4 +137,87 @@ const removeCart = async (req, res) => {
   }
 };
 
-module.exports = { createCart, updateCart, getCart, removeItemFromCart, listCarts, removeCart };
+// Get cart logs for a specific cart
+const getCartLogs = async (req, res) => {
+  try {
+    const { cartId } = req.params;
+    // First verify the cart exists
+    const cartDoc = await admin.firestore().collection('carts').doc(cartId).get();
+    if (!cartDoc.exists) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    
+    try {
+      // First attempt: Try using the composite index (this will work once the index is created)
+      const snapshot = await admin.firestore()
+        .collection('cartLogs')
+        .where('cartId', '==', cartId)
+        .orderBy('timestamp', 'desc')
+        .get();
+      
+      // Transform the data
+      const logs = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          logId: doc.id,
+          ...data,
+          // Convert Firestore Timestamp to ISO string if it exists
+          timestamp: data.timestamp && typeof data.timestamp.toDate === 'function' 
+            ? data.timestamp.toDate().toISOString() 
+            : data.timestamp
+        };
+      });
+      
+      res.status(200).json(logs);
+    } catch (error) {
+      // If the index doesn't exist yet, fall back to a simpler query and sort in memory
+      if (error.code === 9 && error.message.includes('index')) {
+        console.log('Missing index, falling back to in-memory sorting');
+        
+        // Simpler query without orderBy
+        const snapshot = await admin.firestore()
+          .collection('cartLogs')
+          .where('cartId', '==', cartId)
+          .get();
+        
+        // Transform and sort the data in memory
+        const logs = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            logId: doc.id,
+            ...data,
+            // Convert Firestore Timestamp to ISO string
+            timestamp: data.timestamp && typeof data.timestamp.toDate === 'function' 
+              ? data.timestamp.toDate().toISOString() 
+              : data.timestamp
+          };
+        });
+        
+        // Sort by timestamp descending in memory
+        logs.sort((a, b) => {
+          const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+          const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+          return timeB - timeA; // Descending order
+        });
+        
+        res.status(200).json(logs);
+      } else {
+        // Some other error occurred
+        throw error;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching cart logs:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = { 
+  createCart, 
+  updateCart, 
+  getCart, 
+  removeItemFromCart, 
+  listCarts, 
+  removeCart,
+  getCartLogs
+};

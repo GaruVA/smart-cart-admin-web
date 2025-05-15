@@ -1,6 +1,6 @@
 // src/routes/cartRoutes.js
 const express = require('express');
-const { createCart, updateCart, getCart, removeItemFromCart, listCarts, removeCart } = require('../controllers/cartController');
+const { createCart, updateCart, getCart, removeItemFromCart, listCarts, removeCart, getCartLogs } = require('../controllers/cartController');
 const router = express.Router();
 
 // Define the routes for cart operations
@@ -14,6 +14,8 @@ router.put('/:cartId', updateCart);
 router.delete('/:cartId', removeCart);
 // Remove item from cart
 router.delete('/:cartId/item/:itemId', removeItemFromCart);
+// Get logs for a cart
+router.get('/:cartId/logs', getCartLogs);
 // List all carts with optional filters and pagination
 router.get('/', listCarts);
 
