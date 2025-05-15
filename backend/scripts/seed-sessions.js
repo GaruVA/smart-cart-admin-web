@@ -60,11 +60,34 @@ function createTimestamp(date, startHour, endHour) {
 
 // Function to generate mock sessions for a specific date
 function generateSessionsForDate(date, cartIds) {
-  // Create between 1-3 sessions per day
-  const numSessions = Math.floor(Math.random() * 3) + 1;
+  // Create between 3-9 sessions per day (tripled from original 1-3)
+  const numSessions = Math.floor(Math.random() * 7) + 3;
   const sessions = [];
   
-  for (let i = 0; i < numSessions; i++) {
+  // Define timeframes for more sessions throughout the day
+  const timeSlots = [
+    { name: 'Early morning', startHour: 6, endHour: 8 },
+    { name: 'Morning', startHour: 8, endHour: 11 },
+    { name: 'Lunch time', startHour: 11, endHour: 13 },
+    { name: 'Early afternoon', startHour: 13, endHour: 15 },
+    { name: 'Afternoon', startHour: 15, endHour: 17 },
+    { name: 'Evening', startHour: 17, endHour: 19 },
+    { name: 'Night', startHour: 19, endHour: 21 },
+    { name: 'Late night', startHour: 21, endHour: 23 }
+  ];
+  
+  // Make sure we don't try to select more time slots than are available
+  const slotsToSelect = Math.min(numSessions, timeSlots.length);
+  
+  // Randomly select time slots without replacement to ensure no overlap
+  const selectedSlots = [...timeSlots]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, slotsToSelect);
+  
+  // Adjust numSessions if we don't have enough time slots
+  const actualNumSessions = selectedSlots.length;
+  
+  for (let i = 0; i < actualNumSessions; i++) {
     let sessionType;
     // Distribute session types roughly: 60% completed, 25% active, 15% abandoned
     const rand = Math.random();
@@ -76,31 +99,30 @@ function generateSessionsForDate(date, cartIds) {
       sessionType = 'active';
     }
     
-    // Set different time ranges based on session time
-    let startTime, endTime;
-    if (i === 0) {
-      // Morning session
-      startTime = createTimestamp(date, 8, 11);
-    } else if (i === 1) {
-      // Afternoon session
-      startTime = createTimestamp(date, 12, 16);
-    } else {
-      // Evening session
-      startTime = createTimestamp(date, 17, 20);
+    // Set time based on selected time slot (with safety check)
+    const slot = selectedSlots[i];
+    
+    // Safety check to ensure slot exists
+    if (!slot) {
+      console.error(`No slot found at index ${i}. Selected slots: ${JSON.stringify(selectedSlots)}`);
+      continue;
     }
     
-    // For completed sessions, create end time 20-40 minutes after start
+    const startTime = createTimestamp(date, slot.startHour, slot.endHour);
+    
+    let endTime;
+    // For completed sessions, create end time 15-45 minutes after start
     if (sessionType === 'completed') {
       const startDate = startTime.toDate();
       const endDate = new Date(startDate);
-      endDate.setMinutes(startDate.getMinutes() + Math.floor(Math.random() * 21) + 20); // 20-40 minutes
+      endDate.setMinutes(startDate.getMinutes() + Math.floor(Math.random() * 31) + 15); // 15-45 minutes
       endTime = admin.firestore.Timestamp.fromDate(endDate);
     } else {
       endTime = null;
     }
 
-    // Create random basket of items (1-6 items)
-    const numItems = Math.floor(Math.random() * 6) + 1;
+    // Create random basket of items (1-8 items)
+    const numItems = Math.floor(Math.random() * 8) + 1; // Increased max items from 6 to 8
     const itemPool = [
       { itemId: '5901234123457', unitPrice: 1.99 }, // Organic Bananas
       { itemId: '4003994155486', unitPrice: 3.49 }, // Whole Milk
@@ -128,10 +150,33 @@ function generateSessionsForDate(date, cartIds) {
     const items = [];
     let totalCost = 0;
     
-    // Shuffle the item pool and pick the first numItems
+    // Create shopping patterns for more realistic data
+    const shoppingPatterns = [
+      {name: 'Grocery run', minItems: 5, maxItems: 8}, // Full grocery trip
+      {name: 'Quick stop', minItems: 1, maxItems: 3},  // Just a few items
+      {name: 'Specific needs', minItems: 2, maxItems: 5} // Medium basket
+    ];
+    
+    // Select a random shopping pattern
+    const pattern = shoppingPatterns[Math.floor(Math.random() * shoppingPatterns.length)];
+    const patternNumItems = Math.floor(Math.random() * (pattern.maxItems - pattern.minItems + 1)) + pattern.minItems;
+    
+    // Shuffle the item pool and pick items based on the shopping pattern
     const shuffled = [...itemPool].sort(() => 0.5 - Math.random());
-    for (let j = 0; j < numItems; j++) {
-      const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 of each item
+    for (let j = 0; j < patternNumItems && j < shuffled.length; j++) {
+      // Different shopping patterns have different quantity behaviors
+      let quantity;
+      if (pattern.name === 'Grocery run') {
+        // More items with higher quantities
+        quantity = Math.floor(Math.random() * 5) + 1; // 1-5 of each item
+      } else if (pattern.name === 'Quick stop') {
+        // Usually just 1 of each item
+        quantity = Math.floor(Math.random() * 2) + 1; // 1-2 of each item
+      } else {
+        // Medium quantities
+        quantity = Math.floor(Math.random() * 3) + 1; // 1-3 of each item
+      }
+      
       const { itemId, unitPrice } = shuffled[j];
       const itemCost = quantity * unitPrice;
       totalCost += itemCost;
@@ -176,18 +221,19 @@ async function seedDatabase() {
       process.exit(1);
     }
     
-    // Generate sessions for the past week (April 15-22, 2025)
+    // Generate sessions for the past 15 days (April 8-22, 2025) - extended from 8 days
     const mockSessions = [];
     const today = new Date(2025, 3, 22); // April 22, 2025
     
-    for (let i = 0; i < 8; i++) {
+    // Increased from 8 to 15 days
+    for (let i = 0; i < 15; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const sessionsForDate = generateSessionsForDate(date, cartIds);
       mockSessions.push(...sessionsForDate);
     }
     
-    console.log(`Generated ${mockSessions.length} mock sessions across 8 days`);
+    console.log(`Generated ${mockSessions.length} mock sessions across 15 days`);
     
     // Create a batch to write all documents at once
     const batch = db.batch();
