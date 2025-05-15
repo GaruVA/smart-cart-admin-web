@@ -11,13 +11,13 @@ import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDkiTRBqyPUEI2vxOWjxpRvMHLnJ7vm9rU",
-  authDomain: "smart-cart-e4ff3.firebaseapp.com",
-  projectId: "smart-cart-e4ff3",
-  storageBucket: "smart-cart-e4ff3.firebasestorage.app",
-  messagingSenderId: "327888803071",
-  appId: "1:327888803071:web:e705547e4943ed3e41e8ca",
-  measurementId: "G-8GV88SHJMB"
+  apiKey: "AIzaSyCC0pvcBIpms6wmsPHwbFFAcvtfrRSUl1I",
+  authDomain: "smart-cart-e9f37.firebaseapp.com",
+  projectId: "smart-cart-e9f37",
+  storageBucket: "smart-cart-e9f37.firebasestorage.app",
+  messagingSenderId: "353190152613",
+  appId: "1:353190152613:web:c5821717ba37401f9d004c",
+  measurementId: "G-36TMKG4MKE"
 };
 
 // Initialize Firebase
