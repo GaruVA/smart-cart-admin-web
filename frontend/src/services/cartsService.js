@@ -13,6 +13,11 @@ const cartsService = {
     return api.get(`/carts/${id}`);
   },
 
+  // Get logs for a specific cart
+  getCartLogs: (cartId) => {
+    return api.get(`/carts/${cartId}/logs`);
+  },
+
   // Create a new cart
   createCart: (cartData) => {
     return api.post('/carts', cartData);
