@@ -198,9 +198,8 @@ if (loading && isEditing) {
             className={`form-control ${errors.stockQuantity ? 'is-invalid' : ''}`}
           />
           {errors.stockQuantity && <div className="invalid-feedback">{errors.stockQuantity}</div>}
-        </div>
-          <div className="form-group">
-          <label htmlFor="weight">Weight (grams)</label>
+        </div>          <div className="form-group">
+          <label htmlFor="weight">Weight (kilograms)</label>
           <input
             type="number"
             id="weight"

@@ -125,7 +125,7 @@ const ItemsList = ({ items, loading, error, onViewDetail, onAddNew, onEditItem, 
               <th onClick={() => requestSort('stockQuantity')}>
                 Stock {sortConfig.key === 'stockQuantity' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>              <th onClick={() => requestSort('weight')}>
-                Weight (g) {sortConfig.key === 'weight' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                Weight (kg) {sortConfig.key === 'weight' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
               </th>
               <th>Actions</th>
             </tr>
